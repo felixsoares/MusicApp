@@ -8,6 +8,7 @@ data class Song(
     val trackName: String?,
     val collectionName: String?,
     val artworkUrl100: String?,
+    val artworkUrl60: String?,
     val previewUrl: String?,
     val primaryGenreName: String?
 )

@@ -11,6 +11,7 @@ fun SearchResponse.toResultList() = detailResponses.map {
         trackName = it.trackName,
         collectionName = it.collectionName,
         artworkUrl100 = it.artworkUrl100,
+        artworkUrl60 = it.artworkUrl60,
         previewUrl = it.previewUrl,
         primaryGenreName = it.primaryGenreName
     )
