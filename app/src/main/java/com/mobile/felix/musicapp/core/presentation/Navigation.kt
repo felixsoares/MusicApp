@@ -16,7 +16,7 @@ fun Navigation(
 
     NavHost(
         navController = navController,
-        startDestination = Router.Detail(1),
+        startDestination = Router.Home,
         modifier = modifier
     ) {
         composable<Router.Home> {
@@ -29,7 +29,9 @@ fun Navigation(
 
         composable<Router.Detail> {
             val id = it.arguments?.getInt("id") ?: 0
-            SongScreen()
+            SongScreen(
+                id = id
+            )
         }
     }
 }

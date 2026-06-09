@@ -13,5 +13,6 @@ data class Song(
     val largePoster: String?,
     val smallPoster: String?,
     val songPreview: String?,
-    val primaryGenreName: String?
+    val primaryGenreName: String?,
+    val durationTime: Long?
 )

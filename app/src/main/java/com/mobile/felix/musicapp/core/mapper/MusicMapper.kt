@@ -16,6 +16,7 @@ fun SearchResponse.toResultList() = detailResponses.map {
         largePoster = it.artworkUrl100,
         smallPoster = it.artworkUrl60,
         songPreview = it.previewUrl,
-        primaryGenreName = it.primaryGenreName
+        primaryGenreName = it.primaryGenreName,
+        durationTime = it.trackTimeMillis
     )
 }

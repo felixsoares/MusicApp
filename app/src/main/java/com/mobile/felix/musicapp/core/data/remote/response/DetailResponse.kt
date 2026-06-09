@@ -14,5 +14,6 @@ data class DetailResponse(
     @SerializedName("artworkUrl60") val artworkUrl60: String?,
     @SerializedName("artworkUrl100") val artworkUrl100: String?,
     @SerializedName("previewUrl") val previewUrl: String?,
-    @SerializedName("primaryGenreName") val primaryGenreName: String?
+    @SerializedName("primaryGenreName") val primaryGenreName: String?,
+    @SerializedName("trackTimeMillis") val trackTimeMillis: Long?
 )

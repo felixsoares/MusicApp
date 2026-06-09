@@ -4,9 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +18,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,8 +31,10 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,32 +47,46 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mobile.felix.musicapp.core.domain.Song
+import com.mobile.felix.musicapp.core.presentation.ErrorContentView
+import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.feature.song.presentation.action.SongAction
 import java.util.Locale
+
+@Composable
+fun SongScreen(
+    modifier: Modifier = Modifier,
+    id: Int
+) {
+    val viewModel: SongViewModel = hiltViewModel()
+    val state = viewModel.uiState.collectAsStateWithLifecycle()
+
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        viewModel.submitAction(SongAction.Load(id))
+    }
+
+    SongScreenContent(
+        modifier = modifier,
+        uiState = state.value,
+        action = viewModel::submitAction
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongScreen(
-    modifier: Modifier = Modifier
+private fun SongScreenContent(
+    modifier: Modifier = Modifier,
+    uiState: SongUiState,
+    action: (SongAction) -> Unit,
 ) {
-    val song = Song(
-        trackId = 1,
-        collectionId = 1,
-        artistId = 1,
-        wrapperType = "track",
-        kind = "song",
-        artistName = "Artist Name",
-        trackName = "Track Name",
-        collectionName = "Collection Name",
-        largePoster = "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/53/a7/7f/53a77fab-c54c-a57b-8130-248fc12d0c80/093624948995.jpg/100x100bb.jpg",
-        smallPoster = "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/53/a7/7f/53a77fab-c54c-a57b-8130-248fc12d0c80/093624948995.jpg/60x60bb.jpg",
-        songPreview = "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/53/a7/7f/53a77fab-c54c-a57b-8130-248fc12d0c80/093624948995.jpg/60x60bb.jpg",
-        primaryGenreName = "Genre Name"
-    )
-
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
@@ -96,46 +111,77 @@ fun SongScreen(
             )
         },
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(song.largePoster)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "${song.trackName} artwork",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(250.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-            }
+        when {
+            uiState.isLoading -> LoadingView()
+            uiState.song != null -> SongData(
+                innerPadding = innerPadding,
+                song = uiState.song,
+                playbackPosition = uiState.playbackPosition,
+                playbackState = uiState.playbackState,
+                action = action
+            )
 
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                SongDetail(song)
-                SongSlider()
-                SongButtons()
-            }
+            uiState.hasError -> ErrorView()
+        }
+    }
+}
+
+@Composable
+private fun ErrorView() {
+    val message = "An error occurred while loading the song. Please try again later."
+    ErrorContentView(message = message)
+}
+
+
+@Composable
+fun SongData(
+    innerPadding: PaddingValues,
+    song: Song,
+    playbackPosition: Long,
+    playbackState: PlaybackState,
+    action: (SongAction) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            contentAlignment = Alignment.Center
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song.largePoster)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "${song.trackName} artwork",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(250.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            )
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            SongDetail(song)
+            SongSlider(playbackPosition = playbackPosition, action = action)
+            SongButtons(action = action, playbackState = playbackState)
         }
     }
 }
 
 @Composable
 fun SongButtons(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    playbackState: PlaybackState,
+    action: (SongAction) -> Unit,
 ) {
     Row(
         modifier = modifier
@@ -143,6 +189,12 @@ fun SongButtons(
             .padding(all = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val isPlaying = playbackState == PlaybackState.Playing
+        val isEnable = playbackState != PlaybackState.Error
+        val clickAction = if (isPlaying) SongAction.Pause else SongAction.Play
+        val icon = if (isPlaying) Icons.Filled.PlayArrow else Icons.Filled.Pause
+        val contentDescription = if (isPlaying) "Pause song" else "Play song"
+
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.weight(1f)
@@ -151,35 +203,45 @@ fun SongButtons(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { /* do something */ },
+                    onClick = { action(clickAction) },
                     modifier = Modifier.size(60.dp),
                     colors = IconButtonDefaults.iconButtonColors(
                         contentColor = Color.White,
                         containerColor = Color.DarkGray
-                    )
+                    ),
+                    enabled = isEnable
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = "Play song",
+                        imageVector = icon,
+                        contentDescription = contentDescription,
                     )
                 }
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = { action(SongAction.FastRewind) },
+                    enabled = isEnable
+                ) {
                     Icon(
                         imageVector = Icons.Filled.FastRewind,
                         contentDescription = "Fast rewind",
                     )
                 }
-                IconButton(onClick = { /* do something */ }) {
+                IconButton(
+                    onClick = { action(SongAction.FastForward) },
+                    enabled = isEnable
+                ) {
                     Icon(
                         imageVector = Icons.Filled.FastForward,
                         contentDescription = "Fast forward"
                     )
                 }
             }
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(
+                onClick = { action(SongAction.Repeat) },
+                enabled = isEnable
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Repeat,
-                    contentDescription = "Next song"
+                    contentDescription = "Repeat song"
                 )
             }
         }
@@ -211,14 +273,20 @@ private fun SongDetail(song: Song) {
 @Composable
 fun SongSlider(
     modifier: Modifier = Modifier,
-    totalDurationSeconds: Float = 260f
+    playbackPosition: Long,
+    action: (SongAction) -> Unit,
 ) {
     val minValue = 0f
-    var currentSeconds by remember { mutableFloatStateOf(86f) }
+    val totalDurationMs = 30000L
 
-    val remainingSeconds = totalDurationSeconds - currentSeconds
-    val currentTimeLabel = formatTime(currentSeconds)
-    val remainingTimeLabel = "-${formatTime(remainingSeconds)}"
+    var currentPositionMs by remember { mutableLongStateOf(playbackPosition) }
+    val remainingTimeMs = totalDurationMs - currentPositionMs
+    val currentTimeLabel = formatTime(currentPositionMs)
+    val remainingTimeLabel = "-${formatTime(remainingTimeMs)}"
+
+    LaunchedEffect(playbackPosition) {
+        currentPositionMs = playbackPosition
+    }
 
     Column(
         modifier = modifier
@@ -226,9 +294,14 @@ fun SongSlider(
             .padding(horizontal = 10.dp)
     ) {
         Slider(
-            value = currentSeconds,
-            valueRange = minValue..totalDurationSeconds,
-            onValueChange = { currentSeconds = it },
+            value = currentPositionMs.toFloat(),
+            valueRange = minValue..totalDurationMs.toFloat(),
+            onValueChange = {
+                currentPositionMs = it.toLong()
+            },
+            onValueChangeFinished = {
+                action(SongAction.SeekTo(currentPositionMs))
+            },
             thumb = {
                 Box(
                     modifier = Modifier
@@ -269,8 +342,8 @@ fun SongSlider(
     }
 }
 
-private fun formatTime(secondsInput: Float): String {
-    val totalSeconds = secondsInput.toInt()
+private fun formatTime(millisecondsInput: Long): String {
+    val totalSeconds = millisecondsInput / 1000
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
     return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
@@ -279,5 +352,25 @@ private fun formatTime(secondsInput: Float): String {
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
-    SongScreen()
+    SongScreenContent(
+        uiState = SongUiState(
+            song = Song(
+                trackName = "Song name",
+                collectionName = "Album name",
+                artistName = "Artist name",
+                durationTime = 240000L,
+                largePoster = null,
+                songPreview = null,
+                trackId = null,
+                collectionId = null,
+                artistId = null,
+                wrapperType = null,
+                kind = null,
+                smallPoster = null,
+                primaryGenreName = null
+            ),
+            playbackState = PlaybackState.Playing
+        ),
+        action = {},
+    )
 }

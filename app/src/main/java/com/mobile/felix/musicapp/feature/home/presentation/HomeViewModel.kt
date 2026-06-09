@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
-import com.mobile.felix.musicapp.feature.home.data.useCase.HomeUseCase
+import com.mobile.felix.musicapp.feature.home.data.useCase.GetSongsByTermUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val homeUseCase: HomeUseCase
+    private val getSongsByTermUseCase: GetSongsByTermUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -47,7 +47,7 @@ class HomeViewModel @Inject constructor(
     fun fetchSongsByTerm(query: String) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
-            when (val result = homeUseCase.getSongsByTerm(query)) {
+            when (val result = getSongsByTermUseCase.invoke(query)) {
                 is Result.Success -> _uiState.value = HomeUiState.Data(result.data)
                 is Result.Error -> {
                     _uiState.value = when (result.failure) {

@@ -15,11 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +41,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mobile.felix.musicapp.core.domain.Song
+import com.mobile.felix.musicapp.core.presentation.ErrorContentView
+import com.mobile.felix.musicapp.core.presentation.LoadingView
 
 @Composable
 fun HomeScreen(
@@ -151,43 +150,16 @@ private fun HomeHeader(onIconSearchClick: () -> Unit) {
 
 @Composable
 fun ErrorView(homeUiState: HomeUiState, onClickRetry: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        val message = when (homeUiState) {
-            is HomeUiState.InternetError -> "No internet connection. Please check your connection and try again."
-            is HomeUiState.UnknowError -> "An unknown error occurred. Please try again later."
-            else -> "Some error occurred. Please try again later."
-        }
-
-        Text(
-            text = message,
-            modifier = Modifier.padding(end = 16.dp, start = 16.dp)
-        )
-
-        Button(
-            onClick = { onClickRetry() },
-            modifier = Modifier.padding(top = 16.dp),
-        ) {
-            Text(text = "Retry")
-        }
+    val message = when (homeUiState) {
+        is HomeUiState.InternetError -> "No internet connection. Please check your connection and try again."
+        is HomeUiState.UnknowError -> "An unknown error occurred. Please try again later."
+        else -> "Some error occurred. Please try again later."
     }
-}
-
-@Composable
-fun LoadingView() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.secondary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
-    }
+    ErrorContentView(
+        message = message,
+        hasRetry = true,
+        onClickRetry = onClickRetry
+    )
 }
 
 @Composable
@@ -273,10 +245,11 @@ fun HomePreview() {
                     wrapperType = "track",
                     kind = "song",
                     artistName = "Linkin Park",
-                    songPreview = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/mzaf_12264444120548938071.plus.aac.p.m4a",
+                    songPreview = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3f/cb/c7/3fcbc7cc-0606-7f6e-7fc3-793318cfd1ed/mzaf_16081918663584534594.plus.aac.p.m4a",
                     primaryGenreName = "Rock",
                     largePoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/100x100bb.jpg",
                     smallPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/60x60bb.jpg",
+                    durationTime = 216294,
                 ),
             )
         ), onClickRetry = {}, onQueryChanged = {}, onItemClick = {}

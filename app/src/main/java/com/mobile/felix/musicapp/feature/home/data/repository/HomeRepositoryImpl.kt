@@ -5,21 +5,25 @@ import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.feature.home.domain.repository.HomeRepository
 import com.mobile.felix.musicapp.feature.home.domain.source.HomeDataSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import javax.inject.Inject
 
 class HomeRepositoryImpl @Inject constructor(
-    val dataSource: HomeDataSource
+    private val dataSource: HomeDataSource,
+    private val dispatcher: CoroutineDispatcher
 ) : HomeRepository {
 
-    override suspend fun getSongsByTerm(query: String): Result<List<Song>> {
-        try {
-            val result = dataSource.getSongsByTerm(query)
-            return Result.Success(result)
-        } catch (_: IOException) {
-            return Result.Error(Failure.NetworkError)
-        } catch (_: Exception) {
-            return Result.Error(Failure.Unknown)
+    override suspend fun getSongsByTerm(query: String): Result<List<Song>> =
+        withContext(dispatcher) {
+            return@withContext try {
+                val result = dataSource.getSongsByTerm(query)
+                Result.Success(result)
+            } catch (_: IOException) {
+                Result.Error(Failure.NetworkError)
+            } catch (_: Exception) {
+                Result.Error(Failure.Unknown)
+            }
         }
-    }
 }
