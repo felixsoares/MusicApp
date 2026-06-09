@@ -1,7 +1,6 @@
 package com.mobile.felix.musicapp.feature.home.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,7 +109,7 @@ private fun HomeScreenContent(
         }
 
         when (state) {
-            is HomeUiState.Data -> SongList(songs = state.songs, modifier = modifier)
+            is HomeUiState.Data -> SongList(songs = state.songs)
             is HomeUiState.Loading -> LoadingView()
             else -> ErrorView(state, onClickRetry)
         }
@@ -190,7 +189,7 @@ fun LoadingView() {
 }
 
 @Composable
-fun SongList(songs: List<Song>, modifier: Modifier) {
+fun SongList(songs: List<Song>) {
     if (songs.isEmpty()) {
         Text(
             text = "No songs found, search for another term.",
@@ -200,7 +199,7 @@ fun SongList(songs: List<Song>, modifier: Modifier) {
         )
     } else {
         LazyColumn(
-            modifier = modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             items(songs.size) { index ->
                 val song = songs[index]
@@ -246,9 +245,10 @@ fun SongItem(song: Song) {
                     color = Color.Gray
                 )
             }
-            Image(
+            Icon(
                 imageVector = Icons.Default.MoreVert,
-                contentDescription = "Play",
+                contentDescription = "More",
+                tint = Color.White,
                 modifier = Modifier.size(24.dp),
             )
         }

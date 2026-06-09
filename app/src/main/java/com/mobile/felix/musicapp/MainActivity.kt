@@ -1,13 +1,10 @@
 package com.mobile.felix.musicapp
 
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
@@ -30,7 +27,6 @@ class MainActivity : ComponentActivity() {
                     HomeScreen(
                         modifier = Modifier
                             .statusBarsPadding()
-                            .navigationBarsPadding()
                             .padding(innerPadding)
                     )
                 }
