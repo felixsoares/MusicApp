@@ -47,7 +47,7 @@ import com.mobile.felix.musicapp.core.domain.Song
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier, onItemClick: (Int) -> Unit
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
@@ -63,7 +63,8 @@ fun HomeScreen(
         },
         onQueryChanged = { query ->
             viewModel.onQueryChanged(query)
-        }
+        },
+        onItemClick
     )
 }
 
@@ -73,7 +74,8 @@ private fun HomeScreenContent(
     state: HomeUiState,
     modifier: Modifier = Modifier,
     onClickRetry: () -> Unit,
-    onQueryChanged: (String) -> Unit
+    onQueryChanged: (String) -> Unit,
+    onItemClick: (Int) -> Unit
 ) {
 
     var queryText by remember { mutableStateOf("") }
@@ -109,7 +111,7 @@ private fun HomeScreenContent(
         }
 
         when (state) {
-            is HomeUiState.Data -> SongList(songs = state.songs)
+            is HomeUiState.Data -> SongList(songs = state.songs, onItemClick = onItemClick)
             is HomeUiState.Loading -> LoadingView()
             else -> ErrorView(state, onClickRetry)
         }
@@ -189,7 +191,7 @@ fun LoadingView() {
 }
 
 @Composable
-fun SongList(songs: List<Song>) {
+fun SongList(songs: List<Song>, onItemClick: (Int) -> Unit) {
     if (songs.isEmpty()) {
         Text(
             text = "No songs found, search for another term.",
@@ -203,23 +205,24 @@ fun SongList(songs: List<Song>) {
         ) {
             items(songs.size) { index ->
                 val song = songs[index]
-                SongItem(song = song)
+                SongItem(song = song, onItemClick = onItemClick)
             }
         }
     }
 }
 
 @Composable
-fun SongItem(song: Song) {
+fun SongItem(song: Song, onItemClick: (Int) -> Unit) {
     Row(
         modifier = Modifier
             .padding(10.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable { onItemClick(song.songPreview.hashCode()) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(song.artworkUrl60)
+                .data(song.smallPoster)
                 .crossfade(true)
                 .build(),
             contentDescription = "${song.trackName} artwork",
@@ -255,7 +258,6 @@ fun SongItem(song: Song) {
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
@@ -263,17 +265,20 @@ fun HomePreview() {
         state = HomeUiState.Data(
             songs = listOf(
                 Song(
+                    trackId = 1,
+                    collectionId = 1,
+                    artistId = 1,
                     trackName = "In the End",
                     collectionName = "Hybrid Theory",
                     wrapperType = "track",
                     kind = "song",
                     artistName = "Linkin Park",
-                    previewUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/mzaf_12264444120548938071.plus.aac.p.m4a",
+                    songPreview = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/mzaf_12264444120548938071.plus.aac.p.m4a",
                     primaryGenreName = "Rock",
-                    artworkUrl100 = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/100x100bb.jpg",
-                    artworkUrl60 = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/60x60bb.jpg",
+                    largePoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/100x100bb.jpg",
+                    smallPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/60x60bb.jpg",
                 ),
             )
-        ), onClickRetry = {}, onQueryChanged = {}
+        ), onClickRetry = {}, onQueryChanged = {}, onItemClick = {}
     )
 }
