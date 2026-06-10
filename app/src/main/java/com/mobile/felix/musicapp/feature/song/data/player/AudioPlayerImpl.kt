@@ -2,20 +2,13 @@ package com.mobile.felix.musicapp.feature.song.data.player
 
 import android.content.Context
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.util.EventLogger
 import com.mobile.felix.musicapp.feature.song.domain.player.AudioPlayer
-import com.mobile.felix.musicapp.feature.song.presentation.PlaybackState
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import javax.inject.Inject
