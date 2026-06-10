@@ -11,7 +11,7 @@ interface ApiService {
         @Query("country") country: String = "US",
         @Query("media") media: String = "music",
         @Query("entity") entity: String? = null,
-        @Query("limit") limit: Int = 10,
+        @Query("limit") limit: Int = 20,
         @Query("lang") lang: String = "en_us",
         @Query("explicit") explicit: String = "Yes"
     ): SearchResponse

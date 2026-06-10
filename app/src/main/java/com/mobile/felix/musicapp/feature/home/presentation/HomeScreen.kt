@@ -5,12 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -21,11 +24,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,14 +83,30 @@ private fun HomeScreenContent(
 ) {
 
     var queryText by remember { mutableStateOf("") }
-    var isTextFieldVisible by remember { mutableStateOf(false) }
+
+    val listState = rememberLazyListState()
+    var isTextFieldVisible by remember { mutableStateOf(true) }
+
+    LaunchedEffect(listState) {
+        var prevIndex = listState.firstVisibleItemIndex
+        var prevOffset = listState.firstVisibleItemScrollOffset
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            isTextFieldVisible = index == 0 ||
+                    index < prevIndex ||
+                    (index == prevIndex && offset < prevOffset)
+            prevIndex = index
+            prevOffset = offset
+        }
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
-        HomeHeader(onIconSearchClick = {
-            isTextFieldVisible = !isTextFieldVisible
-        })
+        HomeHeader()
 
-        AnimatedVisibility(visible = isTextFieldVisible) {
+        AnimatedVisibility(
+            visible = isTextFieldVisible,
+        ) {
             OutlinedTextField(
                 value = queryText,
                 onValueChange = { newText ->
@@ -112,6 +133,7 @@ private fun HomeScreenContent(
         when (state) {
             is HomeUiState.Data -> SongList(
                 songs = state.songs,
+                listState = listState,
                 onItemClick = onItemClick,
                 onAlbumClicked = onAlbumClicked
             )
@@ -123,7 +145,7 @@ private fun HomeScreenContent(
 }
 
 @Composable
-private fun HomeHeader(onIconSearchClick: () -> Unit) {
+private fun HomeHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,7 +162,6 @@ private fun HomeHeader(onIconSearchClick: () -> Unit) {
 
         Box(
             modifier = Modifier
-                .clickable { onIconSearchClick() }
         ) {
             Icon(
                 imageVector = Icons.Default.Search,
@@ -170,6 +191,7 @@ fun ErrorView(homeUiState: HomeUiState, onClickRetry: () -> Unit) {
 @Composable
 fun SongList(
     songs: List<Song>,
+    listState: LazyListState,
     onItemClick: (Int) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
@@ -190,7 +212,9 @@ fun SongList(
         var selectedAlbumId by remember { mutableLongStateOf(0L) }
 
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             items(songs.size) { index ->
                 val song = songs[index]
