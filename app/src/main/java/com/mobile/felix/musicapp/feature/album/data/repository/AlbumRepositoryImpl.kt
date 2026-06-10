@@ -20,7 +20,7 @@ class AlbumRepositoryImpl @Inject constructor(
         withContext(dispatcher) {
             return@withContext try {
                 val result = dataSource.getAlbum(albumId)
-                Result.Success(result)
+                Result.Success(result.drop(1))
             } catch (_: IOException) {
                 Result.Error(Failure.NetworkError)
             } catch (_: Exception) {
