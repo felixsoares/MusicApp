@@ -131,7 +131,7 @@ class SongViewModel @Inject constructor(
         pendingActions.emit(action)
     }
 
-    override fun onCleared() {
+    public override fun onCleared() {
         super.onCleared()
         audioPlayer.pause()
         audioPlayer.release()
