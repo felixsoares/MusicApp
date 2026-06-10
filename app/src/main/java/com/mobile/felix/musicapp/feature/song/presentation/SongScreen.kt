@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ import com.mobile.felix.musicapp.core.presentation.ErrorContentView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
 import com.mobile.felix.musicapp.feature.song.presentation.action.SongAction
 import java.util.Locale
+import com.mobile.felix.musicapp.R
 
 @Composable
 fun SongScreen(
@@ -99,13 +101,13 @@ private fun SongScreenContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Now playing")
+                    Text(stringResource(R.string.title_now_playing))
                 },
                 navigationIcon = {
                     IconButton(onClick = { onBackPress() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back page"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 },
@@ -113,7 +115,7 @@ private fun SongScreenContent(
                     IconButton(onClick = { showActionSheet = true }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "More options"
+                            contentDescription = stringResource(R.string.cd_more_options)
                         )
                     }
                 },
@@ -140,8 +142,7 @@ private fun SongScreenContent(
 
 @Composable
 private fun ErrorView() {
-    val message = "An error occurred while loading the song. Please try again later."
-    ErrorContentView(message = message)
+    ErrorContentView(message = stringResource(R.string.error_song_load))
 }
 
 
@@ -156,6 +157,7 @@ private fun SongData(
     action: (SongAction) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
+    val labelUnknown = stringResource(R.string.label_unknown)
     Column(
         modifier = Modifier
             .padding(innerPadding)
@@ -174,7 +176,7 @@ private fun SongData(
                     .data(song.largePoster)
                     .crossfade(true)
                     .build(),
-                contentDescription = "${song.trackName} artwork",
+                contentDescription = stringResource(R.string.cd_artwork, song.trackName ?: ""),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(250.dp)
@@ -193,14 +195,14 @@ private fun SongData(
         AlbumActionSheet(
             isOpen = showActionSheet,
             onDismissRequest = { onDismissActionSheet() },
-            songName = song.trackName ?: "Unknown",
-            artistName = song.artistName ?: "Unknown",
+            songName = song.trackName ?: labelUnknown,
+            artistName = song.artistName ?: labelUnknown,
             onAlbumClick = {
                 onDismissActionSheet()
                 onAlbumClicked(
-                    song.collectionName ?: "Unknown",
-                    song.artistName ?: "Unknown",
-                    song.largePoster ?: "Unknown",
+                    song.collectionName ?: labelUnknown,
+                    song.artistName ?: labelUnknown,
+                    song.largePoster ?: labelUnknown,
                     song.collectionId ?: 0L
                 )
             }
@@ -224,15 +226,13 @@ private fun SongButtons(
         val isEnable = playbackState != PlaybackState.Error
         val clickAction = if (isPlaying) SongAction.Pause else SongAction.Play
         val icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow
-        val contentDescription = if (isPlaying) "Pause song" else "Play song"
+        val contentDescription = if (isPlaying) stringResource(R.string.cd_pause_song) else stringResource(R.string.cd_play_song)
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.weight(1f)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = { action(clickAction) },
                     modifier = Modifier.size(60.dp),
@@ -242,10 +242,7 @@ private fun SongButtons(
                     ),
                     enabled = isEnable
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = contentDescription,
-                    )
+                    Icon(imageVector = icon, contentDescription = contentDescription)
                 }
                 IconButton(
                     onClick = { action(SongAction.FastRewind) },
@@ -253,7 +250,7 @@ private fun SongButtons(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.FastRewind,
-                        contentDescription = "Fast rewind",
+                        contentDescription = stringResource(R.string.cd_fast_rewind),
                     )
                 }
                 IconButton(
@@ -262,7 +259,7 @@ private fun SongButtons(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.FastForward,
-                        contentDescription = "Fast forward"
+                        contentDescription = stringResource(R.string.cd_fast_forward)
                     )
                 }
             }
@@ -272,7 +269,7 @@ private fun SongButtons(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Repeat,
-                    contentDescription = "Repeat song"
+                    contentDescription = stringResource(R.string.cd_repeat_song)
                 )
             }
         }
@@ -281,19 +278,15 @@ private fun SongButtons(
 
 @Composable
 private fun SongDetail(song: Song) {
+    val labelEmpty = stringResource(R.string.label_empty)
     Text(
-        text = song.trackName ?: song.artistName ?: "Empty",
+        text = song.trackName ?: song.artistName ?: labelEmpty,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        modifier = Modifier.padding(
-            top = 16.dp,
-            bottom = 4.dp,
-            start = 16.dp,
-            end = 16.dp
-        )
+        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 16.dp, end = 16.dp)
     )
     Text(
-        text = song.collectionName ?: song.artistName ?: "Empty",
+        text = song.collectionName ?: song.artistName ?: labelEmpty,
         fontSize = 14.sp,
         color = Color.Gray,
         modifier = Modifier.padding(horizontal = 16.dp)

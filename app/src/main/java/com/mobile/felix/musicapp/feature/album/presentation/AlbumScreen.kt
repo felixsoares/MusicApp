@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,6 +38,7 @@ import coil.request.ImageRequest
 import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.ErrorContentView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.R
 
 @Composable
 fun AlbumScreen(
@@ -82,14 +84,12 @@ private fun AlbumScreenContent(
         modifier = modifier,
         topBar = {
             TopAppBar(
-                title = {
-                    Text(albumName)
-                },
+                title = { Text(albumName) },
                 navigationIcon = {
                     IconButton(onClick = { onBackPress() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back page"
+                            contentDescription = stringResource(R.string.cd_back)
                         )
                     }
                 }
@@ -112,7 +112,7 @@ private fun AlbumScreenContent(
                         .data(albumPoster)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "$albumName artwork",
+                    contentDescription = stringResource(R.string.cd_artwork, albumName),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
@@ -147,7 +147,7 @@ private fun AlbumScreenContent(
 private fun AlbumList(songs: List<Song>) {
     if (songs.isEmpty()) {
         Text(
-            text = "No songs found, search for another album.",
+            text = stringResource(R.string.msg_no_songs_album),
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             color = Color.Gray,
             fontSize = 12.sp
@@ -166,6 +166,7 @@ private fun AlbumList(songs: List<Song>) {
 
 @Composable
 private fun SongItem(song: Song) {
+    val labelEmpty = stringResource(R.string.label_empty)
     Row(
         modifier = Modifier
             .padding(10.dp)
@@ -177,7 +178,7 @@ private fun SongItem(song: Song) {
                 .data(song.smallPoster)
                 .crossfade(true)
                 .build(),
-            contentDescription = "${song.trackName} artwork",
+            contentDescription = stringResource(R.string.cd_artwork, song.trackName ?: ""),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .padding(end = 10.dp)
@@ -191,11 +192,11 @@ private fun SongItem(song: Song) {
         ) {
             Column {
                 Text(
-                    text = song.trackName ?: song.artistName ?: "Empty",
+                    text = song.trackName ?: song.artistName ?: labelEmpty,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = song.collectionName ?: song.artistName ?: "Empty",
+                    text = song.collectionName ?: song.artistName ?: labelEmpty,
                     fontSize = 10.sp,
                     color = Color.Gray
                 )
@@ -207,9 +208,9 @@ private fun SongItem(song: Song) {
 @Composable
 private fun ErrorView(uiState: AlbumState, onClickRetry: () -> Unit) {
     val message = when (uiState) {
-        is AlbumState.InternetError -> "No internet connection. Please check your connection and try again."
-        is AlbumState.UnknowError -> "An unknown error occurred. Please try again later."
-        else -> "Some error occurred. Please try again later."
+        is AlbumState.InternetError -> stringResource(R.string.error_no_internet)
+        is AlbumState.UnknowError -> stringResource(R.string.error_unknown)
+        else -> stringResource(R.string.error_generic)
     }
     ErrorContentView(
         message = message,

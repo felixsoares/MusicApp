@@ -1,3 +1,38 @@
 <resources>
     <string name="app_name">MusicApp</string>
+
+    <!-- Labels -->
+    <string name="label_empty">Empty</string>
+    <string name="label_unknown">Unknown</string>
+    <string name="label_search">Search</string>
+
+    <!-- Titles -->
+    <string name="title_songs">Songs</string>
+    <string name="title_now_playing">Now playing</string>
+
+    <!-- Actions -->
+    <string name="action_retry">Retry</string>
+    <string name="action_view_album">View Album</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_back">Back page</string>
+    <string name="cd_more">More</string>
+    <string name="cd_more_options">More options</string>
+    <string name="cd_play_song">Play song</string>
+    <string name="cd_pause_song">Pause song</string>
+    <string name="cd_fast_rewind">Fast rewind</string>
+    <string name="cd_fast_forward">Fast forward</string>
+    <string name="cd_repeat_song">Repeat song</string>
+    <string name="cd_library_music">Library Music</string>
+    <string name="cd_artwork">%1$s artwork</string>
+
+    <!-- Messages -->
+    <string name="msg_no_songs_saved">No songs saved, search for a term and select a song =)</string>
+    <string name="msg_no_songs_album">No songs found, search for another album.</string>
+
+    <!-- Errors -->
+    <string name="error_no_internet">No internet connection. Please check your connection and try again.</string>
+    <string name="error_unknown">An unknown error occurred. Please try again later.</string>
+    <string name="error_generic">Some error occurred. Please try again later.</string>
+    <string name="error_song_load">An error occurred while loading the song. Please try again later.</string>
 </resources>

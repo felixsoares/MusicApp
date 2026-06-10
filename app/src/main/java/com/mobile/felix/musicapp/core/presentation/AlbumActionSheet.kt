@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.mobile.felix.musicapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,13 +76,12 @@ fun AlbumActionSheet(
         ) {
             Icon(
                 imageVector = Icons.Filled.LibraryMusic,
-                contentDescription = "Library Music",
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                contentDescription = stringResource(R.string.cd_library_music),
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
 
             Text(
-                text = "View Album",
+                text = stringResource(R.string.action_view_album),
                 fontSize = 16.sp,
                 modifier = Modifier.padding(horizontal = 10.dp)
             )

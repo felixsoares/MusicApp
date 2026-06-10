@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.mobile.felix.musicapp.R
 
 @Composable
 fun ErrorContentView(
@@ -35,7 +37,7 @@ fun ErrorContentView(
                 onClick = { onClickRetry() },
                 modifier = Modifier.padding(top = 16.dp),
             ) {
-                Text(text = "Retry")
+                Text(text = stringResource(R.string.action_retry))
             }
         }
     }

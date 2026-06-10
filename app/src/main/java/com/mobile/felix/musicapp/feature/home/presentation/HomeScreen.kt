@@ -37,13 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.mobile.felix.musicapp.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -112,9 +113,7 @@ private fun HomeScreenContent(
     Column(modifier = modifier.fillMaxSize()) {
         HomeHeader()
 
-        AnimatedVisibility(
-            visible = isTextFieldVisible,
-        ) {
+        AnimatedVisibility(visible = isTextFieldVisible) {
             OutlinedTextField(
                 value = queryText,
                 onValueChange = { newText ->
@@ -127,13 +126,13 @@ private fun HomeScreenContent(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(R.string.label_search),
                         tint = Color.White,
                     )
                 },
                 shape = RoundedCornerShape(24.dp),
                 placeholder = {
-                    Text(text = "Search")
+                    Text(text = stringResource(R.string.label_search))
                 }
             )
         }
@@ -162,18 +161,16 @@ private fun HomeHeader() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Songs",
+            text = stringResource(R.string.title_songs),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp)
         )
 
-        Box(
-            modifier = Modifier
-        ) {
+        Box(modifier = Modifier) {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
+                contentDescription = stringResource(R.string.label_search),
                 modifier = Modifier
                     .padding(18.dp)
                     .size(24.dp)
@@ -185,9 +182,9 @@ private fun HomeHeader() {
 @Composable
 fun ErrorView(isInternetError: Boolean, isUnknowError: Boolean, onClickRetry: () -> Unit) {
     val message = when {
-        isInternetError -> "No internet connection. Please check your connection and try again."
-        isUnknowError -> "An unknown error occurred. Please try again later."
-        else -> "Some error occurred. Please try again later."
+        isInternetError -> stringResource(R.string.error_no_internet)
+        isUnknowError -> stringResource(R.string.error_unknown)
+        else -> stringResource(R.string.error_generic)
     }
     ErrorContentView(
         message = message,
@@ -205,7 +202,7 @@ fun SongList(
 ) {
     if (songs.isEmpty()) {
         Text(
-            text = "No songs saved, search for a term and select a song =)",
+            text = stringResource(R.string.msg_no_songs_saved),
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp).fillMaxWidth(),
             color = Color.Gray,
             fontSize = 12.sp,
@@ -265,6 +262,7 @@ fun SongItem(
     onItemClick: (Song) -> Unit,
     onMoreClick: (String, String, String, String, Long) -> Unit
 ) {
+    val labelEmpty = stringResource(R.string.label_empty)
     Row(
         modifier = Modifier
             .padding(10.dp)
@@ -277,7 +275,7 @@ fun SongItem(
                 .data(song.smallPoster)
                 .crossfade(true)
                 .build(),
-            contentDescription = "${song.trackName} artwork",
+            contentDescription = stringResource(R.string.cd_artwork, song.trackName ?: ""),
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .padding(end = 10.dp)
@@ -291,11 +289,11 @@ fun SongItem(
         ) {
             Column {
                 Text(
-                    text = song.trackName ?: song.artistName ?: "Empty",
+                    text = song.trackName ?: song.artistName ?: labelEmpty,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = song.collectionName ?: song.artistName ?: "Empty",
+                    text = song.collectionName ?: song.artistName ?: labelEmpty,
                     fontSize = 10.sp,
                     color = Color.Gray
                 )
@@ -303,9 +301,9 @@ fun SongItem(
             IconButton(
                 onClick = {
                     onMoreClick(
-                        song.trackName ?: "Empty",
-                        song.artistName ?: "Empty",
-                        song.collectionName ?: "Empty",
+                        song.trackName ?: labelEmpty,
+                        song.artistName ?: labelEmpty,
+                        song.collectionName ?: labelEmpty,
                         song.largePoster ?: "",
                         song.collectionId ?: 0L
                     )
@@ -313,7 +311,7 @@ fun SongItem(
             ) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
-                    contentDescription = "More",
+                    contentDescription = stringResource(R.string.cd_more),
                     tint = Color.White,
                     modifier = Modifier.size(24.dp),
                 )
