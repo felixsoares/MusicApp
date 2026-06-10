@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.core.domain.Song
+import com.mobile.felix.musicapp.feature.home.data.useCase.GetLocalSongsUseCase
 import com.mobile.felix.musicapp.feature.home.data.useCase.GetSongsByTermUseCase
 import com.mobile.felix.musicapp.feature.home.data.useCase.SaveSongUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,19 +30,18 @@ import kotlin.time.Duration.Companion.milliseconds
 class HomeViewModel @Inject constructor(
     private val getSongsByTermUseCase: GetSongsByTermUseCase,
     private val saveSongUseCase: SaveSongUseCase,
+    private val getLocalSongsUseCase: GetLocalSongsUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
-
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
-        fetchSongsByTerm("")
+        getLocalSongs()
 
         _searchQuery
             .debounce(300.milliseconds)
-            .filterNot(String::isEmpty)
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
             .flatMapLatest { query ->
@@ -50,9 +50,30 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun getLocalSongs() {
+        viewModelScope.launch {
+            _uiState.value = HomeUiState.Loading
+            when (val result = getLocalSongsUseCase.invoke()) {
+                is Result.Success -> _uiState.value = HomeUiState.Data(result.data)
+                is Result.Error -> {
+                    _uiState.value = when (result.failure) {
+                        Failure.NetworkError -> HomeUiState.InternetError
+                        else -> HomeUiState.UnknowError
+                    }
+                }
+            }
+        }
+    }
+
     fun fetchSongsByTerm(query: String) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
+
+            if(query.isBlank()) {
+                getLocalSongs()
+                return@launch
+            }
+
             when (val result = getSongsByTermUseCase.invoke(query)) {
                 is Result.Success -> _uiState.value = HomeUiState.Data(result.data)
                 is Result.Error -> {

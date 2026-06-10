@@ -6,5 +6,5 @@ import javax.inject.Inject
 class GetSongUseCase @Inject constructor(
     private val repository: SongRepository
 ) {
-    suspend operator fun invoke(id: Int) = repository.getSong(id)
+    suspend operator fun invoke(id: Long) = repository.getSong(id)
 }

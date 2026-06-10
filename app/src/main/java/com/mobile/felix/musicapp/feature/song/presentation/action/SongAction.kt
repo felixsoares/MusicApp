@@ -8,5 +8,5 @@ sealed interface SongAction {
     data object FastRewind : SongAction
     data object Repeat : SongAction
     data class SeekTo(val position: Long) : SongAction
-    data class Load(val id: Int) : SongAction
+    data class Load(val id: Long) : SongAction
 }

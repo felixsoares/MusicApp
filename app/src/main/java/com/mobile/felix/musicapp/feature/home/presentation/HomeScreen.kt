@@ -52,7 +52,7 @@ import com.mobile.felix.musicapp.core.presentation.LoadingView
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier, onItemClick: (Int) -> Unit,
+    modifier: Modifier = Modifier, onItemClick: (Long) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
@@ -69,7 +69,7 @@ fun HomeScreen(
         },
         onItemClick = { song ->
             viewModel.saveSong(song)
-            onItemClick(song.trackId ?: 0)
+            onItemClick(song.trackId ?: 0L)
         },
         onAlbumClicked = onAlbumClicked
     )

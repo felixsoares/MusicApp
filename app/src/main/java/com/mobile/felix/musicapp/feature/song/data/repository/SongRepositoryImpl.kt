@@ -14,7 +14,7 @@ class SongRepositoryImpl @Inject constructor(
     private val songLocalDataSource: SongLocalDataSource,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : SongRepository {
-    override suspend fun getSong(id: Int): Result<Song> = withContext(dispatcher) {
+    override suspend fun getSong(id: Long): Result<Song> = withContext(dispatcher) {
         return@withContext try {
             val song = songLocalDataSource.getSong(id)
             if (song != null) {

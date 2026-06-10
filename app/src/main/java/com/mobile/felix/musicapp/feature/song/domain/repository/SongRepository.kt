@@ -4,5 +4,5 @@ import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.core.domain.Song
 
 interface SongRepository {
-    suspend fun getSong(id: Int): Result<Song>
+    suspend fun getSong(id: Long): Result<Song>
 }

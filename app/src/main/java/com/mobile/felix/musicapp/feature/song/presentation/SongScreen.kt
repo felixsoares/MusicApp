@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,6 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mobile.felix.musicapp.core.domain.Song
+import com.mobile.felix.musicapp.core.presentation.AlbumActionSheet
 import com.mobile.felix.musicapp.core.presentation.ErrorContentView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
 import com.mobile.felix.musicapp.feature.song.presentation.action.SongAction
@@ -61,8 +63,9 @@ import java.util.Locale
 @Composable
 fun SongScreen(
     modifier: Modifier = Modifier,
-    id: Int,
-    onBackPress: () -> Unit
+    id: Long,
+    onBackPress: () -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     val viewModel: SongViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
@@ -75,7 +78,8 @@ fun SongScreen(
         modifier = modifier,
         uiState = state.value,
         action = viewModel::submitAction,
-        onBackPress = onBackPress
+        onBackPress = onBackPress,
+        onAlbumClicked = onAlbumClicked
     )
 }
 
@@ -85,8 +89,11 @@ private fun SongScreenContent(
     modifier: Modifier = Modifier,
     uiState: SongUiState,
     action: (SongAction) -> Unit,
-    onBackPress: () -> Unit
+    onBackPress: () -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
+    var showActionSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -103,7 +110,7 @@ private fun SongScreenContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { showActionSheet = true }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,
                             contentDescription = "More options"
@@ -120,7 +127,10 @@ private fun SongScreenContent(
                 song = uiState.song,
                 playbackPosition = uiState.playbackPosition,
                 playbackState = uiState.playbackState,
-                action = action
+                action = action,
+                showActionSheet = showActionSheet,
+                onDismissActionSheet = { showActionSheet = false },
+                onAlbumClicked = onAlbumClicked
             )
 
             uiState.hasError -> ErrorView()
@@ -141,7 +151,10 @@ private fun SongData(
     song: Song,
     playbackPosition: Long,
     playbackState: PlaybackState,
+    showActionSheet: Boolean,
+    onDismissActionSheet: () -> Unit,
     action: (SongAction) -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -176,6 +189,22 @@ private fun SongData(
             SongSlider(playbackPosition = playbackPosition, action = action)
             SongButtons(action = action, playbackState = playbackState)
         }
+
+        AlbumActionSheet(
+            isOpen = showActionSheet,
+            onDismissRequest = { onDismissActionSheet() },
+            songName = song.trackName ?: "Unknown",
+            artistName = song.artistName ?: "Unknown",
+            onAlbumClick = {
+                onDismissActionSheet()
+                onAlbumClicked(
+                    song.collectionName ?: "Unknown",
+                    song.artistName ?: "Unknown",
+                    song.largePoster ?: "Unknown",
+                    song.collectionId ?: 0L
+                )
+            }
+        )
     }
 }
 
@@ -373,6 +402,6 @@ fun Preview() {
             ),
             playbackState = PlaybackState.Playing
         ),
-        action = {}, onBackPress = {}
+        action = {}, onBackPress = {}, onAlbumClicked = { _, _, _, _ -> }
     )
 }

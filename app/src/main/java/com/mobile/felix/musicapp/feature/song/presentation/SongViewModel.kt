@@ -81,7 +81,7 @@ class SongViewModel @Inject constructor(
         }
     }
 
-    private fun loadSong(id: Int) {
+    private fun loadSong(id: Long) {
         viewModelScope.launch {
             uiState.value = uiState.value.copy(isLoading = true, hasError = false)
             when (val song = useCase.invoke(id)) {

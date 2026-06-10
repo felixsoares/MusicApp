@@ -1,5 +1,6 @@
 package com.mobile.felix.musicapp.feature.home.data.repository
 
+import android.util.Log
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.core.domain.Song
@@ -23,14 +24,21 @@ class HomeRepositoryImpl @Inject constructor(
             return@withContext try {
                 val result = remoteDataSource.getSongsByTerm(query)
                 Result.Success(result)
-            } catch (_: IOException) {
+            } catch (ioe: IOException) {
+                Log.e("HomeRepository", "${ioe.message}")
                 Result.Error(Failure.NetworkError)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("HomeRepository", "${e.message}")
                 Result.Error(Failure.Unknown)
             }
         }
 
     override suspend fun saveSong(song: Song) = withContext(dispatcher) {
         localDataSource.saveSong(song)
+    }
+
+    override suspend fun getLocalSongs(): Result<List<Song>> = withContext(dispatcher) {
+        val localSongs = localDataSource.getSongs()
+        return@withContext Result.Success(localSongs ?: emptyList())
     }
 }

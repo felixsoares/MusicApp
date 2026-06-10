@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 data class DetailResponse(
     @SerializedName("wrapperType") val wrapperType: String?,
     @SerializedName("kind") val kind: String?,
-    @SerializedName("artistId") val artistId: Int?,
+    @SerializedName("artistId") val artistId: Long?,
     @SerializedName("collectionId") val collectionId: Long?,
-    @SerializedName("trackId") val trackId: Int?,
+    @SerializedName("trackId") val trackId: Long?,
     @SerializedName("artistName") val artistName: String?,
     @SerializedName("trackName") val trackName: String?,
     @SerializedName("collectionName") val collectionName: String?,

@@ -12,12 +12,12 @@ import kotlinx.coroutines.flow.Flow
 interface SongDao {
 
     @Query("SELECT * FROM song")
-    fun getSongs(): Flow<List<SongEntity>>
+    fun getSongs(): List<SongEntity>?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(songEntity: SongEntity)
 
     @Query("SELECT * FROM song WHERE trackId = :trackId")
-    suspend fun getSongById(trackId: Int): SongEntity?
+    suspend fun getSongById(trackId: Long): SongEntity?
 
 }

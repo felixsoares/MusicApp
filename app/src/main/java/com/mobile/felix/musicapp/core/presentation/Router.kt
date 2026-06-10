@@ -9,7 +9,7 @@ sealed interface Router {
 
     @Serializable
     data class Detail(
-        val id: Int
+        val id: Long
     ) : Router
 
     @Serializable

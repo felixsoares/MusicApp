@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 )
 data class SongEntity(
     @PrimaryKey(autoGenerate = false)
-    val trackId: Int,
+    val trackId: Long,
     val collectionId: Long,
-    val artistId: Int,
+    val artistId: Long,
     val wrapperType: String,
     val kind: String,
     val artistName: String,

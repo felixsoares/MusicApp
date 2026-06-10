@@ -9,7 +9,7 @@ import javax.inject.Inject
 class SongLocalDataSourceImpl @Inject constructor(
     private val songDao: SongDao
 ) : SongLocalDataSource {
-    override suspend fun getSong(id: Int): Song? {
+    override suspend fun getSong(id: Long): Song? {
         return songDao.getSongById(id)?.toDomain()
     }
 }
