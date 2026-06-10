@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
+import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.feature.home.data.useCase.GetSongsByTermUseCase
+import com.mobile.felix.musicapp.feature.home.data.useCase.SaveSongUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,11 +22,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getSongsByTermUseCase: GetSongsByTermUseCase
+    private val getSongsByTermUseCase: GetSongsByTermUseCase,
+    private val saveSongUseCase: SaveSongUseCase,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -36,7 +40,7 @@ class HomeViewModel @Inject constructor(
         fetchSongsByTerm("")
 
         _searchQuery
-            .debounce(300)
+            .debounce(300.milliseconds)
             .filterNot(String::isEmpty)
             .distinctUntilChanged()
             .flowOn(Dispatchers.IO)
@@ -65,4 +69,9 @@ class HomeViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
+    fun saveSong(song: Song) {
+        viewModelScope.launch {
+            saveSongUseCase.invoke(song)
+        }
+    }
 }

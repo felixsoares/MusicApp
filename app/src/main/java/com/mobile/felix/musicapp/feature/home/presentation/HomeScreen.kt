@@ -59,15 +59,19 @@ fun HomeScreen(
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
     HomeScreenContent(
-        state.value, modifier,
+        state = state.value,
+        modifier = modifier,
         onClickRetry = {
             viewModel.fetchSongsByTerm("")
         },
         onQueryChanged = { query ->
             viewModel.onQueryChanged(query)
         },
-        onItemClick,
-        onAlbumClicked
+        onItemClick = { song ->
+            viewModel.saveSong(song)
+            onItemClick(song.trackId ?: 0)
+        },
+        onAlbumClicked = onAlbumClicked
     )
 }
 
@@ -78,7 +82,7 @@ private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     onClickRetry: () -> Unit,
     onQueryChanged: (String) -> Unit,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Song) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
 
@@ -192,7 +196,7 @@ fun ErrorView(homeUiState: HomeUiState, onClickRetry: () -> Unit) {
 fun SongList(
     songs: List<Song>,
     listState: LazyListState,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Song) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     if (songs.isEmpty()) {
@@ -253,14 +257,14 @@ fun SongList(
 @Composable
 fun SongItem(
     song: Song,
-    onItemClick: (Int) -> Unit,
+    onItemClick: (Song) -> Unit,
     onMoreClick: (String, String, String, String, Long) -> Unit
 ) {
     Row(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
-            .clickable { onItemClick(song.songPreview.hashCode()) },
+            .clickable { onItemClick(song) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
