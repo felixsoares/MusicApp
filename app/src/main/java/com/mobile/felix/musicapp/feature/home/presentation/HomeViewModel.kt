@@ -41,7 +41,6 @@ class HomeViewModel @Inject constructor(
 
     init {
         handlePendingActions()
-
         _searchQuery
             .debounce(300.milliseconds)
             .distinctUntilChanged()
@@ -96,10 +95,8 @@ class HomeViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    private fun saveSong(song: Song) {
-        viewModelScope.launch {
-            saveSongUseCase.invoke(song)
-        }
+    private fun saveSong(song: Song) = viewModelScope.launch {
+        saveSongUseCase.invoke(song)
     }
 
     fun submitAction(action: HomeAction) = viewModelScope.launch {

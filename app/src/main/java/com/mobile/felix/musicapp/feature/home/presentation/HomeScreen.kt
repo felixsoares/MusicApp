@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -145,8 +146,8 @@ private fun HomeScreenContent(
                 onItemClick = onItemClick,
                 onAlbumClicked = onAlbumClicked
             )
-
-            else -> ErrorView(state.isInternetError, state.isUnknowError, onClickRetry)
+            state.isUnknowError || state.isInternetError ->
+                ErrorView(state.isInternetError, state.isUnknowError, onClickRetry)
         }
     }
 }

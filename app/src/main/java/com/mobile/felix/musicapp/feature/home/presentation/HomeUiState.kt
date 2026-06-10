@@ -4,7 +4,7 @@ import com.mobile.felix.musicapp.core.domain.Song
 
 data class HomeUiState(
     val songs: List<Song>? = null,
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val isInternetError: Boolean = false,
     val isUnknowError: Boolean = false,
     val query: String = ""
