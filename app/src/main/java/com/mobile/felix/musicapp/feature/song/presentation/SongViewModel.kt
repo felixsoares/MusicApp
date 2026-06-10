@@ -133,6 +133,7 @@ class SongViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
+        audioPlayer.pause()
         audioPlayer.release()
     }
 }

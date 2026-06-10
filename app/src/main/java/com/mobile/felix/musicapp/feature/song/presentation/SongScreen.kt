@@ -194,7 +194,7 @@ private fun SongButtons(
         val isPlaying = playbackState == PlaybackState.Playing
         val isEnable = playbackState != PlaybackState.Error
         val clickAction = if (isPlaying) SongAction.Pause else SongAction.Play
-        val icon = if (isPlaying) Icons.Filled.PlayArrow else Icons.Filled.Pause
+        val icon = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow
         val contentDescription = if (isPlaying) "Pause song" else "Play song"
 
         Row(
