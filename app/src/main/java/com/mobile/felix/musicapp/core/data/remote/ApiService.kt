@@ -15,4 +15,10 @@ interface ApiService {
         @Query("lang") lang: String = "en_us",
         @Query("explicit") explicit: String = "Yes"
     ): SearchResponse
+
+    @GET("lookup")
+    suspend fun getAlbumTracks(
+        @Query("id") albumId: Long,
+        @Query("entity") entity: String = "song"
+    ): SearchResponse
 }

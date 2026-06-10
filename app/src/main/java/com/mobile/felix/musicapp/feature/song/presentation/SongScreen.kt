@@ -134,7 +134,7 @@ private fun ErrorView() {
 
 
 @Composable
-fun SongData(
+private fun SongData(
     innerPadding: PaddingValues,
     song: Song,
     playbackPosition: Long,
@@ -178,7 +178,7 @@ fun SongData(
 }
 
 @Composable
-fun SongButtons(
+private fun SongButtons(
     modifier: Modifier = Modifier,
     playbackState: PlaybackState,
     action: (SongAction) -> Unit,
@@ -271,7 +271,7 @@ private fun SongDetail(song: Song) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SongSlider(
+private fun SongSlider(
     modifier: Modifier = Modifier,
     playbackPosition: Long,
     action: (SongAction) -> Unit,

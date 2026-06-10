@@ -10,4 +10,9 @@ sealed interface Router {
     data class Detail(
         val id: Int
     ) : Router
+
+    @Serializable
+    data class Album(
+        val albumId: Long
+    ) : Router
 }
