@@ -6,7 +6,7 @@ data class DetailResponse(
     @SerializedName("wrapperType") val wrapperType: String?,
     @SerializedName("kind") val kind: String?,
     @SerializedName("artistId") val artistId: Int?,
-    @SerializedName("collectionId") val collectionId: Int?,
+    @SerializedName("collectionId") val collectionId: Long?,
     @SerializedName("trackId") val trackId: Int?,
     @SerializedName("artistName") val artistName: String?,
     @SerializedName("trackName") val trackName: String?,

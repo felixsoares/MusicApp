@@ -17,10 +17,12 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,10 +45,12 @@ import coil.request.ImageRequest
 import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.ErrorContentView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.core.presentation.AlbumActionSheet
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier, onItemClick: (Int) -> Unit
+    modifier: Modifier = Modifier, onItemClick: (Int) -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
@@ -63,7 +67,8 @@ fun HomeScreen(
         onQueryChanged = { query ->
             viewModel.onQueryChanged(query)
         },
-        onItemClick
+        onItemClick,
+        onAlbumClicked
     )
 }
 
@@ -74,7 +79,8 @@ private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     onClickRetry: () -> Unit,
     onQueryChanged: (String) -> Unit,
-    onItemClick: (Int) -> Unit
+    onItemClick: (Int) -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
 
     var queryText by remember { mutableStateOf("") }
@@ -110,7 +116,12 @@ private fun HomeScreenContent(
         }
 
         when (state) {
-            is HomeUiState.Data -> SongList(songs = state.songs, onItemClick = onItemClick)
+            is HomeUiState.Data -> SongList(
+                songs = state.songs,
+                onItemClick = onItemClick,
+                onAlbumClicked = onAlbumClicked
+            )
+
             is HomeUiState.Loading -> LoadingView()
             else -> ErrorView(state, onClickRetry)
         }
@@ -163,7 +174,11 @@ fun ErrorView(homeUiState: HomeUiState, onClickRetry: () -> Unit) {
 }
 
 @Composable
-fun SongList(songs: List<Song>, onItemClick: (Int) -> Unit) {
+fun SongList(
+    songs: List<Song>,
+    onItemClick: (Int) -> Unit,
+    onAlbumClicked: (String, String, String, Long) -> Unit
+) {
     if (songs.isEmpty()) {
         Text(
             text = "No songs found, search for another term.",
@@ -172,19 +187,57 @@ fun SongList(songs: List<Song>, onItemClick: (Int) -> Unit) {
             fontSize = 12.sp
         )
     } else {
+        var showActionSheet by remember { mutableStateOf(false) }
+        var selectedSong by remember { mutableStateOf("") }
+        var selectedArtist by remember { mutableStateOf("") }
+
+        var selectedAlbum by remember { mutableStateOf("") }
+        var selectedPoster by remember { mutableStateOf("") }
+        var selectedAlbumId by remember { mutableLongStateOf(0L) }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
             items(songs.size) { index ->
                 val song = songs[index]
-                SongItem(song = song, onItemClick = onItemClick)
+                SongItem(
+                    song = song,
+                    onItemClick = onItemClick,
+                    onMoreClick = { songName, artistName, albumName, poster, albumId ->
+                        selectedSong = songName
+                        selectedArtist = artistName
+                        showActionSheet = true
+                        selectedPoster = poster
+                        selectedAlbum = albumName
+                        selectedAlbumId = albumId
+                    })
             }
         }
+
+        AlbumActionSheet(
+            isOpen = showActionSheet,
+            songName = selectedSong,
+            artistName = selectedArtist,
+            onDismissRequest = { showActionSheet = false },
+            onAlbumClick = {
+                showActionSheet = false
+                onAlbumClicked(
+                    selectedAlbum,
+                    selectedArtist,
+                    selectedPoster,
+                    selectedAlbumId
+                )
+            }
+        )
     }
 }
 
 @Composable
-fun SongItem(song: Song, onItemClick: (Int) -> Unit) {
+fun SongItem(
+    song: Song,
+    onItemClick: (Int) -> Unit,
+    onMoreClick: (String, String, String, String, Long) -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(10.dp)
@@ -220,12 +273,24 @@ fun SongItem(song: Song, onItemClick: (Int) -> Unit) {
                     color = Color.Gray
                 )
             }
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "More",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp),
-            )
+            IconButton(
+                onClick = {
+                    onMoreClick(
+                        song.trackName ?: "Empty",
+                        song.artistName ?: "Empty",
+                        song.collectionName ?: "Empty",
+                        song.largePoster ?: "",
+                        song.collectionId ?: 0L
+                    )
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "More",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
         }
     }
 }
@@ -252,6 +317,10 @@ fun HomePreview() {
                     durationTime = 216294,
                 ),
             )
-        ), onClickRetry = {}, onQueryChanged = {}, onItemClick = {}
+        ),
+        onClickRetry = {},
+        onQueryChanged = {},
+        onItemClick = {},
+        onAlbumClicked = { _, _, _, _ -> }
     )
 }

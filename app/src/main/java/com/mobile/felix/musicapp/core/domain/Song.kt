@@ -3,7 +3,7 @@ package com.mobile.felix.musicapp.core.domain
 
 data class Song(
     val trackId: Int?,
-    val collectionId: Int?,
+    val collectionId: Long?,
     val artistId: Int?,
     val wrapperType: String?,
     val kind: String?,
