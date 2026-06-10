@@ -10,7 +10,6 @@ import com.mobile.felix.musicapp.feature.home.data.useCase.GetSongsByTermUseCase
 import com.mobile.felix.musicapp.feature.home.data.useCase.SaveSongUseCase
 import com.mobile.felix.musicapp.feature.home.presentation.action.HomeAction
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,7 +42,6 @@ class HomeViewModel @Inject constructor(
         _searchQuery
             .debounce(300.milliseconds)
             .distinctUntilChanged()
-            .flowOn(Dispatchers.IO)
             .flatMapLatest { query ->
                 if (query.isBlank()) {
                     flowOf(getLocalSongs())
