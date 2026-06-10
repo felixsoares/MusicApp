@@ -33,6 +33,8 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState
 
     init {
+        fetchSongsByTerm("")
+
         _searchQuery
             .debounce(300)
             .filterNot(String::isEmpty)

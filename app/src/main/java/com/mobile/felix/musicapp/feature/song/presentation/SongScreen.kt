@@ -61,7 +61,8 @@ import java.util.Locale
 @Composable
 fun SongScreen(
     modifier: Modifier = Modifier,
-    id: Int
+    id: Int,
+    onBackPress: () -> Unit
 ) {
     val viewModel: SongViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
@@ -73,7 +74,8 @@ fun SongScreen(
     SongScreenContent(
         modifier = modifier,
         uiState = state.value,
-        action = viewModel::submitAction
+        action = viewModel::submitAction,
+        onBackPress = onBackPress
     )
 }
 
@@ -83,6 +85,7 @@ private fun SongScreenContent(
     modifier: Modifier = Modifier,
     uiState: SongUiState,
     action: (SongAction) -> Unit,
+    onBackPress: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -92,7 +95,7 @@ private fun SongScreenContent(
                     Text("Now playing")
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { onBackPress() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back page"
@@ -370,6 +373,6 @@ fun Preview() {
             ),
             playbackState = PlaybackState.Playing
         ),
-        action = {},
+        action = {}, onBackPress = {}
     )
 }

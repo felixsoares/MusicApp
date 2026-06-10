@@ -40,11 +40,12 @@ import com.mobile.felix.musicapp.core.presentation.LoadingView
 
 @Composable
 fun AlbumScreen(
+    modifier: Modifier = Modifier,
     albumId: Long,
     albumName: String,
     albumPoster: String,
     artistName: String,
-    modifier: Modifier = Modifier
+    onBackPress: () -> Unit
 ) {
     val viewModel: AlbumViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,7 +62,8 @@ fun AlbumScreen(
         modifier = modifier,
         onClickRetry = {
             viewModel.getAlbumById(albumId)
-        }
+        },
+        onBackPress = onBackPress
     )
 }
 
@@ -74,6 +76,7 @@ private fun AlbumScreenContent(
     artistName: String,
     modifier: Modifier = Modifier,
     onClickRetry: () -> Unit,
+    onBackPress: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -83,7 +86,7 @@ private fun AlbumScreenContent(
                     Text(albumName)
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { onBackPress() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back page"
@@ -223,6 +226,7 @@ fun Preview() {
         albumName = "Album name",
         albumPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8b-5d9e7f1a3e7b/886448652422.jpg/100x100bb.jpg",
         artistName = "Artist name",
-        onClickRetry = { }
+        onClickRetry = { },
+        onBackPress = { }
     )
 }

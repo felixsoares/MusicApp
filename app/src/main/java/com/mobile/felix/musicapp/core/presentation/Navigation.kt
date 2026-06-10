@@ -41,7 +41,10 @@ fun Navigation(
         composable<Router.Detail> {
             val id = it.arguments?.getInt("id") ?: 0
             SongScreen(
-                id = id
+                id = id,
+                onBackPress = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -55,7 +58,10 @@ fun Navigation(
                 albumId = albumId,
                 albumName = album,
                 albumPoster = poster,
-                artistName = artist
+                artistName = artist,
+                onBackPress = {
+                    navController.popBackStack()
+                }
             )
         }
     }
