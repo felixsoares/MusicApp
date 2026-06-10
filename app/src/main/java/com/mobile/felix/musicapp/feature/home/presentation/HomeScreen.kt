@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -203,10 +204,11 @@ fun SongList(
 ) {
     if (songs.isEmpty()) {
         Text(
-            text = "No songs found, search for another term.",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            text = "No songs saved, search for a term and select a song =)",
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp).fillMaxWidth(),
             color = Color.Gray,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center
         )
     } else {
         var showActionSheet by remember { mutableStateOf(false) }
@@ -220,7 +222,7 @@ fun SongList(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 16.dp)
+            contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp)
         ) {
             items(songs.size) { index ->
                 val song = songs[index]
@@ -324,23 +326,7 @@ fun SongItem(
 fun HomePreview() {
     HomeScreenContent(
         state = HomeUiState(
-            songs = listOf(
-                Song(
-                    trackId = 1,
-                    collectionId = 1,
-                    artistId = 1,
-                    trackName = "In the End",
-                    collectionName = "Hybrid Theory",
-                    wrapperType = "track",
-                    kind = "song",
-                    artistName = "Linkin Park",
-                    songPreview = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/3f/cb/c7/3fcbc7cc-0606-7f6e-7fc3-793318cfd1ed/mzaf_16081918663584534594.plus.aac.p.m4a",
-                    primaryGenreName = "Rock",
-                    largePoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/100x100bb.jpg",
-                    smallPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/60x60bb.jpg",
-                    durationTime = 216294,
-                )
-            )
+            songs = emptyList()
         ),
         onClickRetry = {},
         onQueryChanged = {},
