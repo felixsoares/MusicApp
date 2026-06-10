@@ -2,9 +2,10 @@ package com.mobile.felix.musicapp.feature.home.presentation
 
 import com.mobile.felix.musicapp.core.domain.Song
 
-sealed interface HomeUiState {
-    data object Loading : HomeUiState
-    data object InternetError : HomeUiState
-    data object UnknowError : HomeUiState
-    class Data(val songs: List<Song>) : HomeUiState
-}
+data class HomeUiState(
+    val songs: List<Song>? = null,
+    val isLoading: Boolean = false,
+    val isInternetError: Boolean = false,
+    val isUnknowError: Boolean = false,
+    val query: String = ""
+)

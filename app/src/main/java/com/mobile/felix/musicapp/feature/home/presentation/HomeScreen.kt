@@ -49,6 +49,7 @@ import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.AlbumActionSheet
 import com.mobile.felix.musicapp.core.presentation.ErrorContentView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.feature.home.presentation.action.HomeAction
 
 @Composable
 fun HomeScreen(
@@ -62,13 +63,14 @@ fun HomeScreen(
         state = state.value,
         modifier = modifier,
         onClickRetry = {
-            viewModel.fetchSongsByTerm("")
+            val query = state.value.query
+            viewModel.submitAction(HomeAction.Search(query))
         },
         onQueryChanged = { query ->
-            viewModel.onQueryChanged(query)
+            viewModel.submitAction(HomeAction.Search(query))
         },
         onItemClick = { song ->
-            viewModel.saveSong(song)
+            viewModel.submitAction(HomeAction.SaveSong(song))
             onItemClick(song.trackId ?: 0L)
         },
         onAlbumClicked = onAlbumClicked
@@ -86,7 +88,7 @@ private fun HomeScreenContent(
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
 
-    var queryText by remember { mutableStateOf("") }
+    var queryText by remember { mutableStateOf(state.query) }
 
     val listState = rememberLazyListState()
     var isTextFieldVisible by remember { mutableStateOf(true) }
@@ -134,16 +136,16 @@ private fun HomeScreenContent(
             )
         }
 
-        when (state) {
-            is HomeUiState.Data -> SongList(
+        when {
+            state.isLoading -> LoadingView()
+            state.songs != null -> SongList(
                 songs = state.songs,
                 listState = listState,
                 onItemClick = onItemClick,
                 onAlbumClicked = onAlbumClicked
             )
 
-            is HomeUiState.Loading -> LoadingView()
-            else -> ErrorView(state, onClickRetry)
+            else -> ErrorView(state.isInternetError, state.isUnknowError, onClickRetry)
         }
     }
 }
@@ -179,10 +181,10 @@ private fun HomeHeader() {
 }
 
 @Composable
-fun ErrorView(homeUiState: HomeUiState, onClickRetry: () -> Unit) {
-    val message = when (homeUiState) {
-        is HomeUiState.InternetError -> "No internet connection. Please check your connection and try again."
-        is HomeUiState.UnknowError -> "An unknown error occurred. Please try again later."
+fun ErrorView(isInternetError: Boolean, isUnknowError: Boolean, onClickRetry: () -> Unit) {
+    val message = when {
+        isInternetError -> "No internet connection. Please check your connection and try again."
+        isUnknowError -> "An unknown error occurred. Please try again later."
         else -> "Some error occurred. Please try again later."
     }
     ErrorContentView(
@@ -321,7 +323,7 @@ fun SongItem(
 @Composable
 fun HomePreview() {
     HomeScreenContent(
-        state = HomeUiState.Data(
+        state = HomeUiState(
             songs = listOf(
                 Song(
                     trackId = 1,
@@ -337,7 +339,7 @@ fun HomePreview() {
                     largePoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/100x100bb.jpg",
                     smallPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8e-9b1a3d2f0e5b/source/60x60bb.jpg",
                     durationTime = 216294,
-                ),
+                )
             )
         ),
         onClickRetry = {},
