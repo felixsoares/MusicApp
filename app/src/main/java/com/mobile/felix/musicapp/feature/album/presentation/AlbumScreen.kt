@@ -35,10 +35,11 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.mobile.felix.musicapp.core.domain.Song
-import com.mobile.felix.musicapp.core.presentation.ErrorContentView
-import com.mobile.felix.musicapp.core.presentation.LoadingView
 import com.mobile.felix.musicapp.R
+import com.mobile.felix.musicapp.core.domain.Song
+import com.mobile.felix.musicapp.core.presentation.ErrorView
+import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.feature.album.presentation.action.AlbumAction
 
 @Composable
 fun AlbumScreen(
@@ -53,7 +54,7 @@ fun AlbumScreen(
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        viewModel.getAlbumById(albumId)
+        viewModel.submitAction(AlbumAction.SearchAlbum(albumId))
     }
 
     AlbumScreenContent(
@@ -63,7 +64,7 @@ fun AlbumScreen(
         artistName = artistName,
         modifier = modifier,
         onClickRetry = {
-            viewModel.getAlbumById(albumId)
+            viewModel.submitAction(AlbumAction.SearchAlbum(albumId))
         },
         onBackPress = onBackPress
     )
@@ -133,10 +134,14 @@ private fun AlbumScreenContent(
             Column(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                when (state) {
-                    is AlbumState.Data -> AlbumList(songs = state.songs)
-                    is AlbumState.Loading -> LoadingView()
-                    else -> ErrorView(state, onClickRetry)
+                when {
+                    state.isLoading -> LoadingView()
+                    state.songs != null -> AlbumList(songs = state.songs)
+                    state.isUnknowError || state.isInternetError -> ErrorView(
+                        isInternetError = state.isInternetError,
+                        isUnknowError = state.isUnknowError,
+                        onClickRetry = onClickRetry
+                    )
                 }
             }
         }
@@ -144,7 +149,9 @@ private fun AlbumScreenContent(
 }
 
 @Composable
-private fun AlbumList(songs: List<Song>) {
+private fun AlbumList(
+    songs: List<Song>
+) {
     if (songs.isEmpty()) {
         Text(
             text = stringResource(R.string.msg_no_songs_album),
@@ -205,25 +212,11 @@ private fun SongItem(song: Song) {
     }
 }
 
-@Composable
-private fun ErrorView(uiState: AlbumState, onClickRetry: () -> Unit) {
-    val message = when (uiState) {
-        is AlbumState.InternetError -> stringResource(R.string.error_no_internet)
-        is AlbumState.UnknowError -> stringResource(R.string.error_unknown)
-        else -> stringResource(R.string.error_generic)
-    }
-    ErrorContentView(
-        message = message,
-        hasRetry = true,
-        onClickRetry = onClickRetry
-    )
-}
-
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
     AlbumScreenContent(
-        state = AlbumState.Data(emptyList()),
+        state = AlbumState(),
         albumName = "Album name",
         albumPoster = "https://is5-ssl.mzstatic.com/image/thumb/Music125/v4/1c/8e/0b/1c8e0b9a-7d9f-2a3c-6c8b-5d9e7f1a3e7b/886448652422.jpg/100x100bb.jpg",
         artistName = "Artist name",

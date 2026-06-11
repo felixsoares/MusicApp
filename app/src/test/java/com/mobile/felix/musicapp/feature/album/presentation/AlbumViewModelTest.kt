@@ -4,6 +4,7 @@ import com.mobile.felix.musicapp.TestFixtures.fakeSongList
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.feature.album.data.useCase.GetAlbumUseCase
+import com.mobile.felix.musicapp.feature.album.presentation.action.AlbumAction
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -38,57 +39,56 @@ class AlbumViewModelTest {
 
     @Test
     fun `initial state is Loading`() {
-        assertEquals(AlbumState.Loading, viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = true), viewModel.uiState.value)
     }
 
     @Test
-    fun `getAlbumById sets Data state on success`() = runTest {
+    fun `SearchAlbum action sets Data state on success`() = runTest {
         coEvery { getAlbumUseCase.invoke(10L) } returns Result.Success(fakeSongList)
 
-        viewModel.getAlbumById(10L)
+        viewModel.submitAction(AlbumAction.SearchAlbum(10L))
         advanceUntilIdle()
 
-        assertEquals(AlbumState.Data(fakeSongList), viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = false, songs = fakeSongList), viewModel.uiState.value)
     }
 
     @Test
-    fun `getAlbumById sets InternetError on NetworkError`() = runTest {
+    fun `SearchAlbum action sets InternetError on NetworkError`() = runTest {
         coEvery { getAlbumUseCase.invoke(10L) } returns Result.Error(Failure.NetworkError)
 
-        viewModel.getAlbumById(10L)
+        viewModel.submitAction(AlbumAction.SearchAlbum(10L))
         advanceUntilIdle()
 
-        assertEquals(AlbumState.InternetError, viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = false, isInternetError = true), viewModel.uiState.value)
     }
 
     @Test
-    fun `getAlbumById sets UnknowError on Unknown failure`() = runTest {
+    fun `SearchAlbum action sets UnknowError on Unknown failure`() = runTest {
         coEvery { getAlbumUseCase.invoke(10L) } returns Result.Error(Failure.Unknown)
 
-        viewModel.getAlbumById(10L)
+        viewModel.submitAction(AlbumAction.SearchAlbum(10L))
         advanceUntilIdle()
 
-        assertEquals(AlbumState.UnknowError, viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = false, isUnknowError = true), viewModel.uiState.value)
     }
 
     @Test
-    fun `getAlbumById sets Loading state before fetching`() = runTest {
+    fun `SearchAlbum action sets isLoading true before fetching`() = runTest {
         coEvery { getAlbumUseCase.invoke(10L) } returns Result.Success(fakeSongList)
 
-        viewModel.getAlbumById(10L)
+        viewModel.submitAction(AlbumAction.SearchAlbum(10L))
 
         advanceUntilIdle()
-        assertEquals(AlbumState.Data(fakeSongList), viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = false, songs = fakeSongList), viewModel.uiState.value)
     }
 
     @Test
-    fun `getAlbumById with empty list sets Data with empty list`() = runTest {
+    fun `SearchAlbum action with empty list sets Data with empty songs`() = runTest {
         coEvery { getAlbumUseCase.invoke(10L) } returns Result.Success(emptyList())
 
-        viewModel.getAlbumById(10L)
+        viewModel.submitAction(AlbumAction.SearchAlbum(10L))
         advanceUntilIdle()
 
-        assertEquals(AlbumState.Data(emptyList()), viewModel.uiState.value)
+        assertEquals(AlbumState(isLoading = false, songs = emptyList()), viewModel.uiState.value)
     }
 }
-

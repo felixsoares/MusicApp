@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.feature.album.data.useCase.GetAlbumUseCase
+import com.mobile.felix.musicapp.feature.album.presentation.action.AlbumAction
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -15,22 +18,57 @@ class AlbumViewModel @Inject constructor(
     private val getAlbumUseCase: GetAlbumUseCase
 ) : ViewModel() {
 
-    var uiState = MutableStateFlow<AlbumState>(AlbumState.Loading)
+    private val pendingActions = MutableSharedFlow<AlbumAction>()
+
+    var uiState = MutableStateFlow(AlbumState())
         private set
 
-    fun getAlbumById(albumId: Long) {
+    init {
+        handlePendingActions()
+    }
+
+    private fun handlePendingActions() {
         viewModelScope.launch {
-            uiState.value = AlbumState.Loading
+            pendingActions.collect { action ->
+                when (action) {
+                    is AlbumAction.SearchAlbum -> getAlbumById(action.albumId)
+                }
+            }
+        }
+    }
+
+    private fun getAlbumById(albumId: Long) {
+        viewModelScope.launch {
+            uiState.update { current ->
+                current.copy(
+                    isLoading = true,
+                    isUnknowError = false,
+                    isInternetError = false
+                )
+            }
             when (val result = getAlbumUseCase.invoke(albumId = albumId)) {
-                is Result.Success -> uiState.value = AlbumState.Data(result.data)
-                is Result.Error -> {
-                    uiState.value = when (result.failure) {
-                        Failure.NetworkError -> AlbumState.InternetError
-                        else -> AlbumState.UnknowError
+                is Result.Success -> uiState.update { current ->
+                    current.copy(
+                        isLoading = false,
+                        songs = result.data
+                    )
+                }
+
+                is Result.Error -> uiState.update { current ->
+                    when (result.failure) {
+                        Failure.NetworkError -> current.copy(
+                            isLoading = false,
+                            isInternetError = true
+                        )
+
+                        else -> current.copy(isLoading = false, isUnknowError = true)
                     }
                 }
             }
         }
     }
 
+    fun submitAction(action: AlbumAction) = viewModelScope.launch {
+        pendingActions.emit(action)
+    }
 }

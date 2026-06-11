@@ -15,6 +15,24 @@ import androidx.compose.ui.res.stringResource
 import com.mobile.felix.musicapp.R
 
 @Composable
+fun ErrorView(
+    isInternetError: Boolean,
+    isUnknowError: Boolean,
+    onClickRetry: () -> Unit
+) {
+    val message = when {
+        isInternetError -> stringResource(R.string.error_no_internet)
+        isUnknowError -> stringResource(R.string.error_unknown)
+        else -> stringResource(R.string.error_generic)
+    }
+    ErrorContentView(
+        message = message,
+        hasRetry = true,
+        onClickRetry = onClickRetry
+    )
+}
+
+@Composable
 fun ErrorContentView(
     modifier: Modifier = Modifier,
     message: String,

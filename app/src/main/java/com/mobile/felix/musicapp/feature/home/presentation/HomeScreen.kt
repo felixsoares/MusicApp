@@ -41,16 +41,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.mobile.felix.musicapp.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.mobile.felix.musicapp.R
 import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.AlbumActionSheet
-import com.mobile.felix.musicapp.core.presentation.ErrorContentView
+import com.mobile.felix.musicapp.core.presentation.ErrorView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
 import com.mobile.felix.musicapp.feature.home.presentation.action.HomeAction
 
@@ -177,20 +177,6 @@ private fun HomeHeader() {
             )
         }
     }
-}
-
-@Composable
-fun ErrorView(isInternetError: Boolean, isUnknowError: Boolean, onClickRetry: () -> Unit) {
-    val message = when {
-        isInternetError -> stringResource(R.string.error_no_internet)
-        isUnknowError -> stringResource(R.string.error_unknown)
-        else -> stringResource(R.string.error_generic)
-    }
-    ErrorContentView(
-        message = message,
-        hasRetry = true,
-        onClickRetry = onClickRetry
-    )
 }
 
 @Composable
