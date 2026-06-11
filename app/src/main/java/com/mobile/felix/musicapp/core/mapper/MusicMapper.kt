@@ -51,5 +51,7 @@ fun Song.toEntity() = SongEntity(
     smallPoster = smallPoster ?: "",
     songPreview = songPreview ?: "",
     primaryGenreName = primaryGenreName ?: "",
-    durationTime = durationTime ?: 0L
+    durationTime = durationTime ?: 0L,
+    isFromHomeSearch = true,
+    isCachedDetails = false
 )

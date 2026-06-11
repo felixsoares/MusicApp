@@ -23,6 +23,8 @@ class HomeRepositoryImpl @Inject constructor(
         withContext(dispatcher) {
             return@withContext try {
                 val result = remoteDataSource.getSongsByTerm(query)
+                localDataSource.clearOldHomeSearch()
+                localDataSource.saveAllSongs(result)
                 Result.Success(result)
             } catch (ioe: IOException) {
                 Log.e("HomeRepository", "${ioe.message}")
@@ -33,12 +35,12 @@ class HomeRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun saveSong(song: Song) = withContext(dispatcher) {
-        localDataSource.saveSong(song)
+    override suspend fun saveSongToDetailsCache(trackId: Long) = withContext(dispatcher) {
+        localDataSource.markAsCachedDetail(trackId)
     }
 
     override suspend fun getLocalSongs(): Result<List<Song>> = withContext(dispatcher) {
-        val localSongs = localDataSource.getSongs()
+        val localSongs = localDataSource.getOnlyCachedSongs()
         return@withContext Result.Success(localSongs ?: emptyList())
     }
 }

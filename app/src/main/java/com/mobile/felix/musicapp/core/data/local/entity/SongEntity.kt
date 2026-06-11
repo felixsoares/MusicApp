@@ -20,5 +20,7 @@ data class SongEntity(
     val smallPoster: String,
     val songPreview: String,
     val primaryGenreName: String,
-    val durationTime: Long
+    val durationTime: Long,
+    val isFromHomeSearch: Boolean = false,
+    val isCachedDetails: Boolean = false
 )

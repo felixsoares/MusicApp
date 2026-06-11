@@ -72,9 +72,9 @@ fun HomeScreen(
         onQueryChanged = { query ->
             viewModel.submitAction(HomeAction.Search(query))
         },
-        onItemClick = { song ->
-            viewModel.submitAction(HomeAction.SaveSong(song))
-            onItemClick(song.trackId ?: 0L)
+        onItemClick = { trackId ->
+            viewModel.submitAction(HomeAction.SaveSong(trackId))
+            onItemClick(trackId ?: 0L)
         },
         onAlbumClicked = onAlbumClicked
     )
@@ -87,7 +87,7 @@ private fun HomeScreenContent(
     modifier: Modifier = Modifier,
     onClickRetry: () -> Unit,
     onQueryChanged: (String) -> Unit,
-    onItemClick: (Song) -> Unit,
+    onItemClick: (Long) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
 
@@ -183,7 +183,7 @@ private fun HomeHeader() {
 fun SongList(
     songs: List<Song>,
     listState: LazyListState,
-    onItemClick: (Song) -> Unit,
+    onItemClick: (Long) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
     if (songs.isEmpty()) {
@@ -245,7 +245,7 @@ fun SongList(
 @Composable
 fun SongItem(
     song: Song,
-    onItemClick: (Song) -> Unit,
+    onItemClick: (Long) -> Unit,
     onMoreClick: (String, String, String, String, Long) -> Unit
 ) {
     val labelEmpty = stringResource(R.string.label_empty)
@@ -253,7 +253,7 @@ fun SongItem(
         modifier = Modifier
             .padding(10.dp)
             .fillMaxWidth()
-            .clickable { onItemClick(song) },
+            .clickable { onItemClick(song.trackId ?: 0L) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(

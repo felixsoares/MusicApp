@@ -59,7 +59,7 @@ class HomeViewModel @Inject constructor(
                     is HomeAction.Idle -> {}
                     is HomeAction.Search -> onQueryChanged(action.query)
                     is HomeAction.GetLocalSongs -> getLocalSongs()
-                    is HomeAction.SaveSong -> saveSong(action.song)
+                    is HomeAction.SaveSong -> saveSong(action.trackId)
                 }
             }
         }
@@ -92,8 +92,8 @@ class HomeViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    private fun saveSong(song: Song) = viewModelScope.launch {
-        saveSongUseCase.invoke(song)
+    private fun saveSong(trackId: Long) = viewModelScope.launch {
+        saveSongUseCase.invoke(trackId)
     }
 
     fun submitAction(action: HomeAction) = viewModelScope.launch {

@@ -7,5 +7,5 @@ interface HomeAction {
     data class Search(val query: String) : HomeAction
     data object GetLocalSongs : HomeAction
 
-    data class SaveSong(val song: Song) : HomeAction
+    data class SaveSong(val trackId: Long) : HomeAction
 }

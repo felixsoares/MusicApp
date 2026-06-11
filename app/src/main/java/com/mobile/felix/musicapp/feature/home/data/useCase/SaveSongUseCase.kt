@@ -7,5 +7,5 @@ import javax.inject.Inject
 class SaveSongUseCase @Inject constructor(
     private val repository: HomeRepository
 ) {
-    suspend fun invoke(song: Song) = repository.saveSong(song)
+    suspend fun invoke(trackId: Long) = repository.saveSongToDetailsCache(trackId)
 }
