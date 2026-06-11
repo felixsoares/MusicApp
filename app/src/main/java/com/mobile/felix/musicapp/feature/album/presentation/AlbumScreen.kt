@@ -39,6 +39,7 @@ import com.mobile.felix.musicapp.R
 import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.ErrorView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.core.presentation.SongItem
 import com.mobile.felix.musicapp.feature.album.presentation.action.AlbumAction
 
 @Composable
@@ -166,47 +167,6 @@ private fun AlbumList(
             items(songs.size) { index ->
                 val song = songs[index]
                 SongItem(song = song)
-            }
-        }
-    }
-}
-
-@Composable
-private fun SongItem(song: Song) {
-    val labelEmpty = stringResource(R.string.label_empty)
-    Row(
-        modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song.smallPoster)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.cd_artwork, song.trackName ?: ""),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .size(52.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = song.trackName ?: song.artistName ?: labelEmpty,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = song.collectionName ?: song.artistName ?: labelEmpty,
-                    fontSize = 10.sp,
-                    color = Color.Gray
-                )
             }
         }
     }

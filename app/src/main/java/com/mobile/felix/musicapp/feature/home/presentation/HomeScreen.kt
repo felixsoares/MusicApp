@@ -57,6 +57,7 @@ import com.mobile.felix.musicapp.core.domain.Song
 import com.mobile.felix.musicapp.core.presentation.AlbumActionSheet
 import com.mobile.felix.musicapp.core.presentation.ErrorView
 import com.mobile.felix.musicapp.core.presentation.LoadingView
+import com.mobile.felix.musicapp.core.presentation.SongItem
 import com.mobile.felix.musicapp.feature.home.presentation.action.HomeAction
 
 @Composable
@@ -149,6 +150,7 @@ private fun HomeScreenContent(
             state.isLoading -> LoadingView()
             state.isUnknowError || state.isInternetError ->
                 ErrorView(state.isInternetError, state.isUnknowError, onClickRetry)
+
             else -> {
                 SongList(
                     query = state.query,
@@ -207,21 +209,24 @@ fun SongList(
     var selectedPoster by remember { mutableStateOf("") }
     var selectedAlbumId by remember { mutableLongStateOf(0L) }
 
-    val onMoreClickAction: (String, String, String, String, Long) -> Unit = { songName, artistName, albumName, poster, albumId ->
-        selectedSong = songName
-        selectedArtist = artistName
-        selectedPoster = poster
-        selectedAlbum = albumName
-        selectedAlbumId = albumId
-        showActionSheet = true
-    }
+    val onMoreClickAction: (String, String, String, String, Long) -> Unit =
+        { songName, artistName, albumName, poster, albumId ->
+            selectedSong = songName
+            selectedArtist = artistName
+            selectedPoster = poster
+            selectedAlbum = albumName
+            selectedAlbumId = albumId
+            showActionSheet = true
+        }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (query.isBlank()) {
             if (songs.isNullOrEmpty()) {
                 Text(
                     text = stringResource(R.string.msg_no_songs_saved),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .fillMaxWidth(),
                     color = Color.Gray,
                     fontSize = 12.sp,
                     textAlign = TextAlign.Center
@@ -234,7 +239,11 @@ fun SongList(
                 ) {
                     items(songs.size, key = { index -> songs[index].trackId ?: index }) { index ->
                         val song = songs[index]
-                        SongItem(song = song, onItemClick = onItemClick, onMoreClick = onMoreClickAction)
+                        SongItem(
+                            song = song,
+                            onItemClick = onItemClick,
+                            onMoreClick = onMoreClickAction
+                        )
                     }
                 }
             }
@@ -250,13 +259,22 @@ fun SongList(
                 ) { index ->
                     val song = lazyPagingItems[index]
                     if (song != null) {
-                        SongItem(song = song, onItemClick = onItemClick, onMoreClick = onMoreClickAction)
+                        SongItem(
+                            song = song,
+                            onItemClick = onItemClick,
+                            onMoreClick = onMoreClickAction
+                        )
                     }
                 }
 
                 if (lazyPagingItems.loadState.append is LoadState.Loading) {
                     item {
-                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         }
                     }
@@ -274,70 +292,6 @@ fun SongList(
                 onAlbumClicked(selectedAlbum, selectedArtist, selectedPoster, selectedAlbumId)
             }
         )
-    }
-}
-
-@Composable
-fun SongItem(
-    song: Song,
-    onItemClick: (Long) -> Unit,
-    onMoreClick: (String, String, String, String, Long) -> Unit
-) {
-    val labelEmpty = stringResource(R.string.label_empty)
-    Row(
-        modifier = Modifier
-            .padding(10.dp)
-            .fillMaxWidth()
-            .clickable { onItemClick(song.trackId ?: 0L) },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song.smallPoster)
-                .crossfade(true)
-                .build(),
-            contentDescription = stringResource(R.string.cd_artwork, song.trackName ?: ""),
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .padding(end = 10.dp)
-                .size(52.dp)
-                .clip(RoundedCornerShape(8.dp))
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    text = song.trackName ?: song.artistName ?: labelEmpty,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = song.collectionName ?: song.artistName ?: labelEmpty,
-                    fontSize = 10.sp,
-                    color = Color.Gray
-                )
-            }
-            IconButton(
-                onClick = {
-                    onMoreClick(
-                        song.trackName ?: labelEmpty,
-                        song.artistName ?: labelEmpty,
-                        song.collectionName ?: labelEmpty,
-                        song.largePoster ?: "",
-                        song.collectionId ?: 0L
-                    )
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.cd_more),
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp),
-                )
-            }
-        }
     }
 }
 
