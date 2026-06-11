@@ -1,10 +1,13 @@
 package com.mobile.felix.musicapp.feature.home.domain.source
 
+import androidx.paging.PagingSource
+import com.mobile.felix.musicapp.core.data.local.entity.SongEntity
 import com.mobile.felix.musicapp.core.domain.Song
 
 interface HomeLocalDataSource {
-    suspend fun markAsCachedDetail(trackId: Long)
-    suspend fun getOnlyCachedSongs(): List<Song>?
-    suspend fun saveAllSongs(songs: List<Song>)
-    suspend fun clearOldHomeSearch()
+    fun getSearchResultsPaged(): PagingSource<Int, SongEntity>
+    suspend fun getSavedSongs(): List<Song>?
+    suspend fun markAsSaved(trackId: Long)
+    suspend fun replaceSearchResults(songs: List<Song>)
+    suspend fun clearSearch()
 }

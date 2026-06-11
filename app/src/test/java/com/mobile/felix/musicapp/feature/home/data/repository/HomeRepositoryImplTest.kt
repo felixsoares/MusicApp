@@ -1,6 +1,5 @@
 package com.mobile.felix.musicapp.feature.home.data.repository
 
-import com.mobile.felix.musicapp.TestFixtures.fakeSong
 import com.mobile.felix.musicapp.TestFixtures.fakeSongList
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
@@ -30,14 +29,15 @@ class HomeRepositoryImplTest {
         repository = HomeRepositoryImpl(remoteDataSource, localDataSource, testDispatcher)
     }
 
-
     @Test
-    fun `getSongsByTerm returns success when remote data source returns songs`() = runTest(testDispatcher) {
+    fun `getSongsByTerm returns success and replaces search results`() = runTest(testDispatcher) {
         coEvery { remoteDataSource.getSongsByTerm("rock") } returns fakeSongList
+        coJustRun { localDataSource.replaceSearchResults(fakeSongList) }
 
         val result = repository.getSongsByTerm("rock")
 
-        assertEquals(Result.Success(fakeSongList), result)
+        assertEquals(Result.Success(true), result)
+        coVerify(exactly = 1) { localDataSource.replaceSearchResults(fakeSongList) }
     }
 
     @Test
@@ -58,20 +58,18 @@ class HomeRepositoryImplTest {
         assertEquals(Result.Error(Failure.Unknown), result)
     }
 
-
     @Test
-    fun `saveSong delegates to local data source`() = runTest(testDispatcher) {
-        coJustRun { localDataSource.saveSong(fakeSong) }
+    fun `saveSongToDetailsCache delegates trackId to local data source`() = runTest(testDispatcher) {
+        coJustRun { localDataSource.markAsSaved(1L) }
 
-        repository.saveSong(fakeSong)
+        repository.saveSongToDetailsCache(1L)
 
-        coVerify(exactly = 1) { localDataSource.saveSong(fakeSong) }
+        coVerify(exactly = 1) { localDataSource.markAsSaved(1L) }
     }
-
 
     @Test
     fun `getLocalSongs returns success with songs from local data source`() = runTest(testDispatcher) {
-        coEvery { localDataSource.getSongs() } returns fakeSongList
+        coEvery { localDataSource.getSavedSongs() } returns fakeSongList
 
         val result = repository.getLocalSongs()
 
@@ -80,7 +78,7 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getLocalSongs returns success with empty list when local data source returns null`() = runTest(testDispatcher) {
-        coEvery { localDataSource.getSongs() } returns null
+        coEvery { localDataSource.getSavedSongs() } returns null
 
         val result = repository.getLocalSongs()
 
@@ -89,11 +87,19 @@ class HomeRepositoryImplTest {
 
     @Test
     fun `getLocalSongs returns success with empty list when local data source returns empty`() = runTest(testDispatcher) {
-        coEvery { localDataSource.getSongs() } returns emptyList()
+        coEvery { localDataSource.getSavedSongs() } returns emptyList()
 
         val result = repository.getLocalSongs()
 
         assertTrue((result as Result.Success).data.isEmpty())
     }
-}
 
+    @Test
+    fun `clearLocalSongs delegates to local data source clearSearch`() = runTest(testDispatcher) {
+        coJustRun { localDataSource.clearSearch() }
+
+        repository.clearLocalSongs()
+
+        coVerify(exactly = 1) { localDataSource.clearSearch() }
+    }
+}

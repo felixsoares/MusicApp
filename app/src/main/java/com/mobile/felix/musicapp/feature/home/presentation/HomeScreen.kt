@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +46,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.mobile.felix.musicapp.R
@@ -61,9 +66,11 @@ fun HomeScreen(
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state = viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyPagingItems = viewModel.pagedSongsFlow.collectAsLazyPagingItems()
 
     HomeScreenContent(
         state = state.value,
+        lazyPagingItems = lazyPagingItems,
         modifier = modifier,
         onClickRetry = {
             val query = state.value.query
@@ -83,8 +90,9 @@ fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeScreenContent(
-    state: HomeUiState,
     modifier: Modifier = Modifier,
+    state: HomeUiState,
+    lazyPagingItems: LazyPagingItems<Song>,
     onClickRetry: () -> Unit,
     onQueryChanged: (String) -> Unit,
     onItemClick: (Long) -> Unit,
@@ -139,14 +147,18 @@ private fun HomeScreenContent(
 
         when {
             state.isLoading -> LoadingView()
-            state.songs != null -> SongList(
-                songs = state.songs,
-                listState = listState,
-                onItemClick = onItemClick,
-                onAlbumClicked = onAlbumClicked
-            )
             state.isUnknowError || state.isInternetError ->
                 ErrorView(state.isInternetError, state.isUnknowError, onClickRetry)
+            else -> {
+                SongList(
+                    query = state.query,
+                    songs = state.songs,
+                    lazyPagingItems = lazyPagingItems,
+                    listState = listState,
+                    onItemClick = onItemClick,
+                    onAlbumClicked = onAlbumClicked
+                )
+            }
         }
     }
 }
@@ -181,46 +193,74 @@ private fun HomeHeader() {
 
 @Composable
 fun SongList(
-    songs: List<Song>,
+    query: String,
+    songs: List<Song>?,
+    lazyPagingItems: LazyPagingItems<Song>, // 📍 Adicionado
     listState: LazyListState,
     onItemClick: (Long) -> Unit,
     onAlbumClicked: (String, String, String, Long) -> Unit
 ) {
-    if (songs.isEmpty()) {
-        Text(
-            text = stringResource(R.string.msg_no_songs_saved),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp).fillMaxWidth(),
-            color = Color.Gray,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
-    } else {
-        var showActionSheet by remember { mutableStateOf(false) }
-        var selectedSong by remember { mutableStateOf("") }
-        var selectedArtist by remember { mutableStateOf("") }
+    var showActionSheet by remember { mutableStateOf(false) }
+    var selectedSong by remember { mutableStateOf("") }
+    var selectedArtist by remember { mutableStateOf("") }
+    var selectedAlbum by remember { mutableStateOf("") }
+    var selectedPoster by remember { mutableStateOf("") }
+    var selectedAlbumId by remember { mutableLongStateOf(0L) }
 
-        var selectedAlbum by remember { mutableStateOf("") }
-        var selectedPoster by remember { mutableStateOf("") }
-        var selectedAlbumId by remember { mutableLongStateOf(0L) }
+    val onMoreClickAction: (String, String, String, String, Long) -> Unit = { songName, artistName, albumName, poster, albumId ->
+        selectedSong = songName
+        selectedArtist = artistName
+        selectedPoster = poster
+        selectedAlbum = albumName
+        selectedAlbumId = albumId
+        showActionSheet = true
+    }
 
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp)
-        ) {
-            items(songs.size) { index ->
-                val song = songs[index]
-                SongItem(
-                    song = song,
-                    onItemClick = onItemClick,
-                    onMoreClick = { songName, artistName, albumName, poster, albumId ->
-                        selectedSong = songName
-                        selectedArtist = artistName
-                        showActionSheet = true
-                        selectedPoster = poster
-                        selectedAlbum = albumName
-                        selectedAlbumId = albumId
-                    })
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (query.isBlank()) {
+            if (songs.isNullOrEmpty()) {
+                Text(
+                    text = stringResource(R.string.msg_no_songs_saved),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp).fillMaxWidth(),
+                    color = Color.Gray,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp)
+                ) {
+                    items(songs.size, key = { index -> songs[index].trackId ?: index }) { index ->
+                        val song = songs[index]
+                        SongItem(song = song, onItemClick = onItemClick, onMoreClick = onMoreClickAction)
+                    }
+                }
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 16.dp, top = 8.dp)
+            ) {
+                items(
+                    count = lazyPagingItems.itemCount,
+                    key = lazyPagingItems.itemKey { song -> song.trackId ?: 0L }
+                ) { index ->
+                    val song = lazyPagingItems[index]
+                    if (song != null) {
+                        SongItem(song = song, onItemClick = onItemClick, onMoreClick = onMoreClickAction)
+                    }
+                }
+
+                if (lazyPagingItems.loadState.append is LoadState.Loading) {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
             }
         }
 
@@ -231,12 +271,7 @@ fun SongList(
             onDismissRequest = { showActionSheet = false },
             onAlbumClick = {
                 showActionSheet = false
-                onAlbumClicked(
-                    selectedAlbum,
-                    selectedArtist,
-                    selectedPoster,
-                    selectedAlbumId
-                )
+                onAlbumClicked(selectedAlbum, selectedArtist, selectedPoster, selectedAlbumId)
             }
         )
     }
@@ -309,13 +344,14 @@ fun SongItem(
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
-    HomeScreenContent(
-        state = HomeUiState(
-            songs = emptyList()
-        ),
-        onClickRetry = {},
-        onQueryChanged = {},
-        onItemClick = {},
-        onAlbumClicked = { _, _, _, _ -> }
-    )
+//    HomeScreenContent(
+//        state = HomeUiState(
+//            songs = emptyList()
+//        ),
+//        onClickRetry = {},
+//        onQueryChanged = {},
+//        onItemClick = {},
+//        onAlbumClicked = { _, _, _, _ -> },
+//        lazyPagingItems = LazyPagingItems
+//    )
 }
