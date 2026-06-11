@@ -20,12 +20,12 @@ class SaveSongUseCaseTest {
     }
 
     @Test
-    fun `invoke should delegate song to repository`() = runTest {
-        coJustRun { repository.saveSong(fakeSong) }
+    fun `invoke should delegate trackId to repository`() = runTest {
+        val trackId = fakeSong.trackId!!
+        coJustRun { repository.saveSongToDetailsCache(trackId) }
 
-        useCase.invoke(fakeSong)
+        useCase.invoke(trackId)
 
-        coVerify(exactly = 1) { repository.saveSong(fakeSong) }
+        coVerify(exactly = 1) { repository.saveSongToDetailsCache(trackId) }
     }
 }
-

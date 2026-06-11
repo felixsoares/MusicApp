@@ -1,7 +1,5 @@
 package com.mobile.felix.musicapp.feature.home.data.useCase
 
-import com.mobile.felix.musicapp.TestFixtures.fakeSong
-import com.mobile.felix.musicapp.TestFixtures.fakeSongList
 import com.mobile.felix.musicapp.core.domain.Failure
 import com.mobile.felix.musicapp.core.domain.Result
 import com.mobile.felix.musicapp.feature.home.domain.repository.HomeRepository
@@ -24,12 +22,12 @@ class GetSongsByTermUseCaseTest {
     }
 
     @Test
-    fun `invoke should return success when repository returns songs`() = runTest {
-        coEvery { repository.getSongsByTerm("rock") } returns Result.Success(fakeSongList)
+    fun `invoke should return success when repository saves songs`() = runTest {
+        coEvery { repository.getSongsByTerm("rock") } returns Result.Success(true)
 
         val result = useCase.invoke("rock")
 
-        assertEquals(Result.Success(fakeSongList), result)
+        assertEquals(Result.Success(true), result)
         coVerify(exactly = 1) { repository.getSongsByTerm("rock") }
     }
 
@@ -54,11 +52,10 @@ class GetSongsByTermUseCaseTest {
     @Test
     fun `invoke should delegate query to repository`() = runTest {
         val query = "linkin park"
-        coEvery { repository.getSongsByTerm(query) } returns Result.Success(emptyList())
+        coEvery { repository.getSongsByTerm(query) } returns Result.Success(true)
 
         useCase.invoke(query)
 
         coVerify { repository.getSongsByTerm(query) }
     }
 }
-
